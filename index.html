@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protótipo - Preditor de CID - CODEX.AI</title>
+    <title>Protótipo (Versão Mercado) - Preditor de CID - CODEX.AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,77 +20,117 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Estilizando o input de arquivo */
         .file-input-label {
             cursor: pointer;
             transition: all 0.2s ease-in-out;
         }
         .file-input-label:hover {
-            background-color: #eef2ff; /* indigo-50 */
+            background-color: #eef2ff;
         }
         #fileName {
             font-style: italic;
-            color: #4f46e5; /* indigo-600 */
+            color: #4f46e5;
+        }
+        .highlight {
+            background-color: #dbeafe; /* blue-100 */
+            border-radius: 3px;
+            padding: 0 2px;
+        }
+        .feedback-btn {
+            transition: all 0.2s;
+        }
+        .feedback-btn:hover {
+            transform: scale(1.1);
+        }
+        .chart-bar {
+            transition: width 0.5s ease-in-out;
         }
     </style>
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen py-10">
 
-    <div class="w-full max-w-3xl mx-auto p-4">
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="w-full max-w-sm mx-auto">
+        <div class="bg-white p-8 rounded-2xl shadow-lg text-center">
+            <!-- Substitua pela sua logo -->
+            <img src="https://placehold.co/150x50/000000/FFFFFF?text=SUA+LOGO" alt="Logo da Empresa" class="mx-auto mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Acesso à Plataforma</h2>
+            <p class="text-gray-500 mt-2 mb-6">Entre com suas credenciais.</p>
+            <div class="space-y-4">
+                <input type="text" placeholder="Usuário (ex: admin)" id="username" class="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" placeholder="Senha" id="password" class="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button id="loginButton" class="mt-6 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">Entrar</button>
+        </div>
+    </div>
+
+    <!-- APLICAÇÃO PRINCIPAL (inicialmente oculta) -->
+    <div id="main-app" class="hidden w-full max-w-3xl mx-auto p-4">
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
             <!-- Cabeçalho -->
-            <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
-                <h1 class="text-3xl font-bold">CODEX.AI</h1>
-                <p class="mt-1 text-blue-100">Módulo de Sugestão de Códigos CID</p>
+            <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center">
+                <div>
+                    <!-- Substitua pela sua logo com versão branca -->
+                    <img src="https://placehold.co/120x40/FFFFFF/000000?text=SUA+LOGO" alt="Logo CODEX.AI" class="h-8">
+                </div>
+                <div class="text-right">
+                    <p class="text-sm">Bem-vindo, <span id="loggedInUser" class="font-bold">Admin</span></p>
+                    <a href="#" id="logoutButton" class="text-xs text-blue-200 hover:text-white">Sair</a>
+                </div>
             </div>
 
             <!-- Corpo do Módulo -->
             <div class="p-8">
-                <h2 class="text-2xl font-semibold text-gray-800">Análise de Nota Clínica</h2>
-                <p class="text-gray-500 mt-1">Cole a nota clínica ou faça o upload de um arquivo para receber sugestões de CID-10.</p>
-
-                <!-- Abas de seleção de método de entrada -->
-                <div class="mt-6 border-b border-gray-200">
+                <!-- Abas -->
+                <div class="mt-2 border-b border-gray-200">
                     <nav class="-mb-px flex space-x-6" aria-label="Tabs">
                         <button id="tab-text" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-600 border-indigo-500">
-                            Digitar Nota Clínica
+                            Análise de Nota
                         </button>
                         <button id="tab-upload" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
                             Upload de Arquivo
                         </button>
+                        <button id="tab-admin" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
+                            Dashboard Admin
+                        </button>
                     </nav>
                 </div>
 
-                <!-- Área de Entrada de Dados -->
-                <div class="mt-6">
-                    <!-- Text Area -->
-                    <div id="text-input-area">
-                        <label for="clinicalNote" class="block text-sm font-medium text-gray-700">Nota Clínica</label>
-                        <textarea id="clinicalNote" rows="8" class="mt-1 block w-full p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Paciente, 58 anos, sexo masculino, apresenta dor no peito há 2 horas, com irradiação para o braço esquerdo. Histórico de hipertensão e diabetes tipo 2."></textarea>
-                    </div>
-                    <!-- Upload de Arquivo -->
-                    <div id="upload-area" class="hidden">
-                         <label for="file-upload" class="file-input-label mt-1 flex justify-center w-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                            <div class="space-y-1 text-center">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                <div class="flex text-sm text-gray-600">
-                                    <p class="pl-1">Clique para selecionar ou arraste o arquivo</p>
-                                    <input id="file-upload" name="file-upload" type="file" class="sr-only">
+                <!-- ÁREA DE ANÁLISE (para tabs de texto e upload) -->
+                <div id="analysis-area">
+                    <h2 class="text-2xl font-semibold text-gray-800 mt-6">Análise de Nota Clínica</h2>
+                    <p class="text-gray-500 mt-1">Cole a nota clínica ou faça o upload de um arquivo para receber sugestões de CID-10.</p>
+                    
+                    <div class="mt-6">
+                        <div id="text-input-area">
+                            <label for="clinicalNote" class="block text-sm font-medium text-gray-700">Nota Clínica</label>
+                            <textarea id="clinicalNote" rows="8" class="mt-1 block w-full p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Paciente, 58 anos, sexo masculino, apresenta dor no peito há 2 horas, com irradiação para o braço esquerdo. Histórico de hipertensão e diabetes tipo 2. Nega febre ou tosse."></textarea>
+                        </div>
+                        <div id="upload-area" class="hidden">
+                             <label for="file-upload" class="file-input-label mt-1 flex justify-center w-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                    <div class="flex text-sm text-gray-600"><p class="pl-1">Clique para selecionar ou arraste o arquivo</p><input id="file-upload" name="file-upload" type="file" class="sr-only"></div>
+                                    <p class="text-xs text-gray-500">TXT, PDF, DOCX (simulado)</p>
                                 </div>
-                                <p class="text-xs text-gray-500">TXT, PDF, DOCX (simulado)</p>
-                            </div>
-                        </label>
-                        <p id="fileName" class="text-center mt-2 text-sm"></p>
+                            </label>
+                            <p id="fileName" class="text-center mt-2 text-sm"></p>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <button id="analyzeButton" class="w-full bg-blue-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 shadow-lg">
+                            Sugerir Códigos CID
+                        </button>
                     </div>
                 </div>
-
-                <!-- Botão de Ação -->
-                <div class="mt-8">
-                    <button id="analyzeButton" class="w-full bg-blue-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 shadow-lg">
-                        Sugerir Códigos CID
-                    </button>
+                
+                <!-- ÁREA DO DASHBOARD ADMIN (inicialmente oculta) -->
+                <div id="admin-dashboard-area" class="hidden mt-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">Dashboard do Administrador</h2>
+                    <p class="text-gray-500 mt-1">Frequência de CIDs sugeridos na plataforma.</p>
+                    <div id="chart-container" class="mt-6 space-y-4">
+                        <!-- Gráfico será gerado aqui -->
+                    </div>
                 </div>
 
                 <!-- Seção de Resultados -->
@@ -101,12 +141,10 @@
                     </div>
                     <div id="result-content" class="hidden">
                         <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Sugestões de CID-10</h3>
-                        <ul id="cid-list" class="mt-4 space-y-3">
-                           <!-- Os resultados serão inseridos aqui via JS -->
-                        </ul>
+                        <p class="text-sm text-gray-500 mt-2">Clique em uma sugestão para ver a evidência no texto.</p>
+                        <ul id="cid-list" class="mt-4 space-y-3"></ul>
                     </div>
                 </div>
-                 <!-- Caixa de Mensagem de Erro -->
                 <div id="error-message" class="hidden mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
                     <p>Por favor, insira uma nota clínica ou selecione um arquivo para análise.</p>
                 </div>
@@ -118,11 +156,23 @@
     </div>
 
     <script>
-        // Elementos do DOM
+        // --- ELEMENTOS DO DOM ---
+        const loginScreen = document.getElementById('login-screen');
+        const mainApp = document.getElementById('main-app');
+        const loginButton = document.getElementById('loginButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const usernameInput = document.getElementById('username');
+        const loggedInUser = document.getElementById('loggedInUser');
+        
         const tabText = document.getElementById('tab-text');
         const tabUpload = document.getElementById('tab-upload');
+        const tabAdmin = document.getElementById('tab-admin');
+        
+        const analysisArea = document.getElementById('analysis-area');
         const textInputArea = document.getElementById('text-input-area');
         const uploadArea = document.getElementById('upload-area');
+        const adminDashboardArea = document.getElementById('admin-dashboard-area');
+        
         const clinicalNoteInput = document.getElementById('clinicalNote');
         const fileUploadInput = document.getElementById('file-upload');
         const fileNameDisplay = document.getElementById('fileName');
@@ -134,121 +184,222 @@
         const errorMessage = document.getElementById('error-message');
 
         let activeTab = 'text';
-
-        // Lógica das abas
-        tabText.addEventListener('click', () => {
-            activeTab = 'text';
-            textInputArea.classList.remove('hidden');
-            uploadArea.classList.add('hidden');
-            tabText.classList.add('text-indigo-600', 'border-indigo-500');
-            tabUpload.classList.remove('text-indigo-600', 'border-indigo-500');
-            tabUpload.classList.add('text-gray-500', 'border-transparent');
-        });
-
-        tabUpload.addEventListener('click', () => {
-            activeTab = 'upload';
-            textInputArea.classList.add('hidden');
-            uploadArea.classList.remove('hidden');
-            tabUpload.classList.add('text-indigo-600', 'border-indigo-500');
-            tabText.classList.remove('text-indigo-600', 'border-indigo-500');
-            tabText.classList.add('text-gray-500', 'border-transparent');
-        });
+        let originalNoteHTML = '';
         
-        // Exibir nome do arquivo selecionado
-        fileUploadInput.addEventListener('change', () => {
-            if (fileUploadInput.files.length > 0) {
-                fileNameDisplay.textContent = `Arquivo selecionado: ${fileUploadInput.files[0].name}`;
-            } else {
-                fileNameDisplay.textContent = '';
+        // --- LÓGICA DE AUTENTICAÇÃO ---
+        loginButton.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                loggedInUser.textContent = username;
+                loginScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
             }
         });
 
-        // Event listener para o botão de análise
+        logoutButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            usernameInput.value = '';
+            mainApp.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            // Reseta para a aba inicial
+            switchTab('text');
+        });
+
+        // --- LÓGICA DAS ABAS ---
+        const tabs = [
+            { btn: tabText, name: 'text' },
+            { btn: tabUpload, name: 'upload' },
+            { btn: tabAdmin, name: 'admin' }
+        ];
+
+        tabs.forEach(tab => {
+            tab.btn.addEventListener('click', () => switchTab(tab.name));
+        });
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            
+            tabs.forEach(tab => {
+                const isActive = tab.name === tabName;
+                tab.btn.classList.toggle('text-indigo-600', isActive);
+                tab.btn.classList.toggle('border-indigo-500', isActive);
+                tab.btn.classList.toggle('text-gray-500', !isActive);
+                tab.btn.classList.toggle('border-transparent', !isActive);
+            });
+            
+            const isAnalysis = tabName === 'text' || tabName === 'upload';
+            analysisArea.classList.toggle('hidden', !isAnalysis);
+            adminDashboardArea.classList.toggle('hidden', isAnalysis);
+            resultsSection.classList.add('hidden'); // Esconde resultados ao trocar de aba
+
+            if (isAnalysis) {
+                const isText = tabName === 'text';
+                textInputArea.classList.toggle('hidden', !isText);
+                uploadArea.classList.toggle('hidden', isText);
+            } else { // é a aba admin
+                renderAdminChart();
+            }
+        }
+        
+        // --- LÓGICA DO UPLOAD ---
+        fileUploadInput.addEventListener('change', () => {
+            fileNameDisplay.textContent = fileUploadInput.files.length > 0 
+                ? `Arquivo: ${fileUploadInput.files[0].name}` 
+                : '';
+        });
+
+        // --- LÓGICA PRINCIPAL DE ANÁLISE ---
         analyzeButton.addEventListener('click', () => {
-            // Resetar estados
+            resetUI();
+            
+            const noteText = clinicalNoteInput.value;
+            const file = fileUploadInput.files[0];
+
+            if ((activeTab === 'text' && noteText.trim() === '') || (activeTab === 'upload' && !file)) {
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            resultsSection.classList.remove('hidden');
+            loadingSpinner.classList.remove('hidden');
+            
+            setTimeout(() => {
+                const textToAnalyze = activeTab === 'text' ? noteText.toLowerCase() : `simulando conteúdo do arquivo ${file.name} com palavras chave como hipertensão, dor no peito e diabetes.`;
+                const predictions = getPredictions(textToAnalyze);
+                loadingSpinner.classList.add('hidden');
+                displayResults(predictions, noteText);
+                resultContent.classList.remove('hidden');
+            }, 2000);
+        });
+        
+        // --- LÓGICA DO DASHBOARD ADMIN ---
+        function renderAdminChart() {
+            const chartContainer = document.getElementById('chart-container');
+            chartContainer.innerHTML = ''; // Limpa o gráfico anterior
+            
+            // Dados mockados para o gráfico
+            const cidData = [
+                { code: 'I10', count: 125, desc: 'Hipertensão' },
+                { code: 'E11.9', count: 98, desc: 'Diabetes tipo 2' },
+                { code: 'J18.9', count: 76, desc: 'Pneumonia' },
+                { code: 'R07.4', count: 62, desc: 'Dor torácica' },
+                { code: 'I21.9', count: 45, desc: 'Infarto agudo' },
+            ];
+            
+            const maxCount = Math.max(...cidData.map(d => d.count));
+
+            cidData.forEach(data => {
+                const barWidth = (data.count / maxCount) * 100;
+                const chartItem = `
+                    <div class="flex items-center">
+                        <div class="w-28 text-sm font-semibold text-gray-600">${data.code} <span class="font-normal text-gray-400">(${data.desc})</span></div>
+                        <div class="flex-1 bg-gray-200 rounded-full h-6">
+                            <div class="chart-bar bg-blue-500 h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold" style="width: ${barWidth}%;">
+                                ${data.count}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chartContainer.innerHTML += chartItem;
+            });
+        }
+
+        // --- FUNÇÕES AUXILIARES ---
+        function resetUI() {
             errorMessage.classList.add('hidden');
             resultContent.classList.add('hidden');
             resultsSection.classList.add('hidden');
             cidList.innerHTML = '';
-
-            // 1. Validar a entrada
-            const noteText = clinicalNoteInput.value;
-            const file = fileUploadInput.files[0];
-
-            if (activeTab === 'text' && noteText.trim() === '') {
-                errorMessage.classList.remove('hidden');
-                return;
+            if (originalNoteHTML) {
+                clinicalNoteInput.value = originalNoteHTML;
             }
-            if (activeTab === 'upload' && !file) {
-                errorMessage.classList.remove('hidden');
-                return;
-            }
+        }
 
-            // 2. Mostrar o spinner
-            resultsSection.classList.remove('hidden');
-            loadingSpinner.classList.remove('hidden');
-            
-            // 3. Simular a chamada da API de IA (2.5 segundos)
-            setTimeout(() => {
-                // 4. Lógica de Predição Simplificada (simulação de um modelo NLP)
-                const textToAnalyze = activeTab === 'text' ? noteText.toLowerCase() : `simulando conteúdo do arquivo ${file.name} com palavras chave como hipertensão e dor no peito.`;
-                
-                const predictions = new Map();
-                const cidDictionary = {
-                    'I10': { desc: 'Hipertensão essencial (primária)', keywords: ['hipertensão', 'pressão alta', 'has'] },
-                    'I21': { desc: 'Infarto agudo do miocárdio', keywords: ['infarto', 'iam', 'dor no peito'] },
-                    'E11': { desc: 'Diabetes mellitus tipo 2', keywords: ['diabetes', 'dm2', 'glicemia alta'] },
-                    'J06.9': { desc: 'Infecção aguda das vias aéreas superiores', keywords: ['febre', 'tosse', 'resfriado', 'coriza'] },
-                    'R07.4': { desc: 'Dor torácica, não especificada', keywords: ['dor torácica', 'dor no peito'] },
-                };
+        function getPredictions(text) {
+            const predictions = new Map();
+            const cidDictionary = {
+                'I10': { desc: 'Hipertensão essencial (primária)', keywords: ['hipertensão', 'pressão alta', 'has'], evidence: ['hipertensão'] },
+                'I21.9': { desc: 'Infarto agudo do miocárdio, não especificado', keywords: ['infarto', 'iam', 'dor no peito'], evidence: ['dor no peito'] },
+                'E11.9': { desc: 'Diabetes mellitus tipo 2, sem complicações', keywords: ['diabetes', 'dm2'], evidence: ['diabetes tipo 2'] },
+                'R07.4': { desc: 'Dor torácica, não especificada', keywords: ['dor torácica', 'dor no peito'], evidence: ['dor no peito'] },
+                'J18.9': { desc: 'Pneumonia não especificada', keywords: ['pneumonia', 'crepitações'], evidence: ['pneumonia'] },
+            };
 
-                for (const [code, data] of Object.entries(cidDictionary)) {
-                    for (const keyword of data.keywords) {
-                        if (textToAnalyze.includes(keyword)) {
-                            if (!predictions.has(code)) {
-                                predictions.set(code, {
-                                    desc: data.desc,
-                                    // Simula uma confiança baseada na "força" da palavra
-                                    confidence: Math.floor(Math.random() * 10) + 90 
-                                });
-                            }
+            for (const [code, data] of Object.entries(cidDictionary)) {
+                for (const keyword of data.keywords) {
+                    if (text.includes(keyword) && !text.includes(`nega ${keyword}`)) {
+                        if (!predictions.has(code)) {
+                            predictions.set(code, {
+                                desc: data.desc,
+                                confidence: Math.floor(Math.random() * 10) + 90,
+                                evidence: data.evidence
+                            });
                         }
                     }
                 }
+            }
+            return predictions;
+        }
 
-                // 5. Esconder o spinner e mostrar os resultados
-                loadingSpinner.classList.add('hidden');
-                displayResults(predictions);
-                resultContent.classList.remove('hidden');
-                
-            }, 2500);
-        });
-
-        function displayResults(predictions) {
+        function displayResults(predictions, originalText) {
+            originalNoteHTML = originalText;
             if (predictions.size === 0) {
-                cidList.innerHTML = `<li class="text-center text-gray-500 p-4">Nenhum código CID foi sugerido com base na nota fornecida.</li>`;
+                cidList.innerHTML = `<li class="text-center text-gray-500 p-4">Nenhum código CID foi sugerido.</li>`;
                 return;
             }
 
-            // Ordena por confiança (maior primeiro)
             const sortedPredictions = [...predictions.entries()].sort((a, b) => b[1].confidence - a[1].confidence);
-
-            for (const [code, data] of sortedPredictions) {
+            sortedPredictions.forEach(([code, data]) => {
                 const confidenceColor = data.confidence > 95 ? 'text-green-600' : 'text-yellow-600';
-                const listItem = `
-                    <li class="p-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+                const listItem = document.createElement('li');
+                listItem.className = 'p-4 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-indigo-50';
+                listItem.innerHTML = `
+                    <div class="flex items-start justify-between">
                         <div>
                             <p class="font-bold text-indigo-700 text-lg">${code}</p>
                             <p class="text-gray-600">${data.desc}</p>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right flex-shrink-0 ml-4">
                             <p class="font-semibold ${confidenceColor}">${data.confidence}%</p>
                             <p class="text-xs text-gray-400">Confiança</p>
                         </div>
-                    </li>
+                    </div>
+                    <div class="mt-3 flex items-center justify-end space-x-4">
+                        <button class="copy-btn text-xs text-gray-500 hover:text-indigo-600" data-code="${code}">Copiar Código</button>
+                        <div class="flex items-center space-x-2">
+                             <span class="text-xs text-gray-500">Feedback:</span>
+                             <button class="feedback-btn" title="Sugestão correta"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-green-500" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.865 2.4z" /></svg></button>
+                             <button class="feedback-btn" title="Sugestão incorreta"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.106-1.79l-.05-.025A4 4 0 0011.057 2H5.642a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l2.4-3.533A4 4 0 0014.865 9.667z" /></svg></button>
+                        </div>
+                    </div>
                 `;
-                cidList.innerHTML += listItem;
-            }
+                listItem.querySelector('div').addEventListener('click', () => highlightEvidence(data.evidence));
+                cidList.appendChild(listItem);
+            });
+            document.querySelectorAll('.copy-btn').forEach(btn => btn.addEventListener('click', copyCode));
+        }
+
+        function highlightEvidence(evidenceKeywords) {
+            let tempHTML = originalNoteHTML;
+            evidenceKeywords.forEach(keyword => {
+                const regex = new RegExp(`(${keyword})`, 'gi');
+                tempHTML = tempHTML.replace(regex, `<span class="highlight">$1</span>`);
+            });
+            alert("Evidência destacada (simulação):\n\n" + tempHTML.replace(/<\/?span[^>]*>/g, ""));
+        }
+
+        function copyCode(event) {
+            event.stopPropagation();
+            const code = event.target.dataset.code;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = code;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            const originalText = event.target.textContent;
+            event.target.textContent = 'Copiado!';
+            setTimeout(() => { event.target.textContent = originalText; }, 1500);
         }
     </script>
 </body>
