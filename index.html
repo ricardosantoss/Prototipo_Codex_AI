@@ -313,33 +313,60 @@
     });
 
     // -------------------- ANÁLISE --------------------
-    analyzeButton.addEventListener('click', () => {
-      resetUI();
+    analyzeButton.addEventListener('click', async () => { // Adicione 'async'
+  resetUI();
 
-      const noteText = clinicalNoteInput.value;
-      const file = fileUploadInput.files[0];
+  const noteText = clinicalNoteInput.value;
+  // A lógica de upload de arquivo pode ser adicionada depois, vamos focar no texto.
 
-      if ((activeTab === 'text' && noteText.trim() === '') || (activeTab === 'upload' && !file)) {
-        errorMessage.textContent = "Por favor, insira uma nota clínica ou selecione um arquivo para análise.";
-        errorMessage.classList.remove('hidden');
-        return;
-      }
+  if (noteText.trim() === '') {
+    errorMessage.textContent = "Por favor, insira uma nota clínica para análise.";
+    errorMessage.classList.remove('hidden');
+    return;
+  }
 
-      resultsSection.classList.remove('hidden');
-      loadingSpinner.classList.remove('hidden');
+  resultsSection.classList.remove('hidden');
+  loadingSpinner.classList.remove('hidden');
 
-      setTimeout(() => {
-        const textToAnalyze =
-          activeTab === 'text'
-            ? noteText.toLowerCase()
-            : `simulando conteúdo do arquivo ${file.name} com palavras chave como hipertensão, dor no peito e diabetes.`;
-
-        const predictions = getPredictions(textToAnalyze);
-        loadingSpinner.classList.add('hidden');
-        displayResults(predictions);
-        resultContent.classList.remove('hidden');
-      }, 800);
+  try {
+    // Faz a chamada para a sua Serverless Function
+    const response = await fetch('/api/predict', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ clinicalNote: noteText }),
     });
+
+    if (!response.ok) {
+      // Se a resposta do servidor não for OK, lança um erro
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Erro ${response.status}`);
+    }
+
+    const data = await response.json(); // 'data' terá o formato { cids: [...] }
+
+    // Agora, precisamos adaptar a função displayResults para o novo formato
+    // Vamos criar um array de predições a partir da resposta da API
+    const predictions = data.cids.map(item => ({
+        cid: item.cid,
+        label: `Descrição para ${item.cid}`, // Você pode buscar a descrição real ou deixar para depois
+        score: 1.0, // A API não retorna score, podemos simular ou omitir
+        evidence: findEvidence(noteText.toLowerCase(), [item.cid]), // Tenta encontrar o próprio código como evidência
+        terms: [item.cid]
+    }));
+
+    loadingSpinner.classList.add('hidden');
+    displayResults(predictions); // AQUI VOCÊ CHAMA A FUNÇÃO DE EXIBIÇÃO
+    resultContent.classList.remove('hidden');
+
+  } catch (error) {
+    console.error('Erro ao analisar:', error);
+    loadingSpinner.classList.add('hidden');
+    errorMessage.textContent = `Erro: ${error.message}`;
+    errorMessage.classList.remove('hidden');
+  }
+});
 
     // -------------------- DASHBOARD MOCK --------------------
     const mockData = {
