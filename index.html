@@ -226,7 +226,7 @@
         // Função para carregar o arquivo JSON
         async function loadCidDescriptions() {
             try {
-                const response = await fetch('./cid_descriptions.json');
+                const response = await fetch('./cids.json');
                 if (!response.ok) {
                     throw new Error('Não foi possível carregar as descrições dos CIDs.');
                 }
