@@ -1,359 +1,648 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CODEX.AI - Predição de CID-10</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* Seu CSS existente aqui */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08 );
-            width: 100%;
-            max-width: 800px;
-            box-sizing: border-box;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 2.2em;
-        }
-        .input-section,
-        .results-section {
-            margin-bottom: 30px;
-        }
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #555;
-        }
-        textarea {
-            width: 100%;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            min-height: 180px;
-            box-sizing: border-box;
-            resize: vertical;
-            transition: border-color 0.3s ease;
-        }
-        textarea:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-        .button-group {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        button.primary {
-            background-color: #007bff;
-            color: white;
-        }
-        button.primary:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-        button.secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        button.secondary:hover {
-            background-color: #5a6268;
-            transform: translateY(-2px);
-        }
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-        }
-        .loading-spinner i {
-            font-size: 2.5em;
-            color: #007bff;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .results-content {
-            display: none;
-            margin-top: 20px;
-        }
-        .result-card {
-            background-color: #e9f5ff;
-            border: 1px solid #cce5ff;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background-color 0.3s ease;
-        }
-        .result-card:hover {
-            background-color: #d6edff;
-        }
-        .result-card-info h3 {
-            margin: 0 0 5px 0;
-            color: #0056b3;
-            font-size: 1.1em;
-        }
-        .result-card-info p {
-            margin: 0;
-            color: #555;
-            font-size: 0.9em;
-        }
-        .result-card-actions button {
-            background: none;
-            border: none;
-            color: #007bff;
-            cursor: pointer;
-            font-size: 1.2em;
-            padding: 5px;
-        }
-        .result-card-actions button:hover {
-            color: #0056b3;
-        }
-        .hidden {
-            display: none;
-        }
-        .error-message {
-            color: #dc3545;
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        footer {
-            margin-top: auto;
-            padding-top: 20px;
-            color: #777;
-            font-size: 0.85em;
-            text-align: center;
-        }
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            h1 {
-                font-size: 1.8em;
-            }
-            button {
-                width: 100%;
-                justify-content: center;
-            }
-            .button-group {
-                flex-direction: column;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Protótipo (Versão Profissional) - Preditor de CID - CODEX.AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --brand-primary: #3b82f6; /* blue-500 */
+      --brand-secondary: #4f46e5; /* indigo-600 */
+      --background-light: #f8fafc; /* slate-50 */
+      --text-primary: #1e293b; /* slate-800 */
+      --text-secondary: #64748b; /* slate-500 */
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-light );
+      background-image: radial-gradient(#e0e7ff 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .main-card, .login-card { transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .login-card { animation: fadeIn 0.8s ease-out; }
+    @keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+    .loader { border-top-color: var(--brand-primary); animation: spinner 1.5s linear infinite; }
+    @keyframes spinner { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
+    .highlight { background-color:#dbeafe; border-radius:4px; padding:2px 4px; font-weight:500; color:#1e3a8a; }
+    .feedback-btn { transition: all 0.2s; }
+    .feedback-btn:hover { transform: scale(1.15); }
+    .kpi-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 20px -5px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.07);
+    }
+    .tab-button { position: relative; transition: color 0.3s; }
+    .tab-button::after {
+      content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px;
+      background-color: var(--brand-secondary); transform: scaleX(0); transform-origin: bottom left; transition: transform 0.3s ease-in-out;
+    }
+    .tab-button.active { color: var(--brand-secondary); }
+    .tab-button.active::after { transform: scaleX(1); }
+    #analyzeButton:hover svg { animation: search-pulse 1s infinite; }
+    @keyframes search-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+    /* Oculta o texto cru e exibe o highlighter */
+    #clinicalNote { color: transparent; caret-color: #111827; }
+    #highlighted-text { white-space: pre-wrap; }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Sugestões de CID-10</h1>
+<body class="flex items-center justify-center min-h-screen py-10">
 
-        <div class="input-section">
-            <label for="clinicalNote">Nota Clínica:</label>
-            <textarea id="clinicalNote" placeholder="Cole a nota clínica aqui..."></textarea>
-            <div class="button-group">
-                <button id="clearButton" class="secondary"><i class="fas fa-eraser"></i> Limpar</button>
-                <button id="analyzeButton" class="primary"><i class="fas fa-flask"></i> Analisar</button>
-            </div>
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="w-full max-w-sm mx-auto">
+    <div class="login-card bg-white p-8 rounded-2xl shadow-2xl text-center">
+      <img src="https://i.imgur.com/O5hJd4c.png" alt="Logo da Empresa" class="mx-auto mb-6 h-20"/>
+      <h2 class="text-2xl font-bold text-text-primary">Acesso à Plataforma</h2>
+      <p class="text-text-secondary mt-2 mb-8">Entre com suas credenciais.</p>
+      <div class="space-y-4">
+        <input type="text" placeholder="Usuário (ex: admin  )" id="username" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
+        <input type="password" placeholder="Senha" id="password" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
+      </div>
+      <button id="loginButton" class="mt-8 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/50 transform hover:-translate-y-1">
+        Entrar
+      </button>
+    </div>
+  </div>
+
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="main-app" class="hidden w-full max-w-4xl mx-auto p-4">
+    <div class="main-card bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <!-- Cabeçalho -->
+      <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center">
+        <div>
+          <img src="https://i.imgur.com/Jz9aF5p.png" alt="Logo CODEX.AI" class="h-12"/>
+        </div>
+        <div class="text-right">
+          <p class="text-sm">Bem-vindo, <span id="loggedInUser" class="font-bold">Admin</span></p>
+          <a href="#" id="logoutButton" class="text-xs text-blue-200 hover:text-white transition-colors">Sair</a>
+        </div>
+      </div>
+
+      <!-- Corpo -->
+      <div class="p-8">
+        <!-- Abas -->
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button id="tab-text" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Análise de Nota</button>
+            <button id="tab-upload" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Upload de Arquivo</button>
+            <button id="tab-admin" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Dashboard Admin</button>
+          </nav>
         </div>
 
-        <div id="errorMessage" class="error-message hidden"></div>
+        <!-- ÁREA DE ANÁLISE -->
+        <div id="analysis-area">
+          <h2 class="text-2xl font-semibold text-text-primary mt-8">Análise de Nota Clínica</h2>
+          <p class="text-text-secondary mt-1">Cole a nota clínica ou faça o upload para receber sugestões de CID-10.</p>
 
-        <div id="resultsSection" class="results-section hidden">
-            <h2>Resultados:</h2>
-            <div id="loadingSpinner" class="loading-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Analisando...</p>
+          <div class="mt-6">
+            <div id="text-input-area">
+              <div id="clinicalNoteContainer" class="relative">
+                <!-- DIV que mostra o texto com destaques -->
+                <div id="highlighted-text" class="mt-1 block w-full p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent leading-relaxed" style="min-height: 192px;"></div>
+                <!-- Textarea transparente por cima (para edição ) -->
+                <textarea id="clinicalNote" rows="8" class="absolute top-0 left-0 mt-1 block w-full p-4 bg-transparent border-none rounded-lg shadow-sm focus:outline-none leading-relaxed" placeholder="Cole a nota clínica aqui..."></textarea>
+              </div>
             </div>
-            <div id="resultContent" class="results-content">
-                <p>Clique em uma sugestão para ver a evidência no texto.</p>
-                <div id="cidSuggestions"></div>
+
+            <div id="upload-area" class="hidden">
+              <label for="file-upload" class="mt-1 flex justify-center w-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-indigo-50 transition">
+                <div class="space-y-1 text-center">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div class="flex text-sm text-gray-600">
+                    <p class="pl-1">Clique para selecionar ou arraste o arquivo</p>
+                    <input id="file-upload" name="file-upload" type="file" class="sr-only"/>
+                  </div>
+                  <p id="fileName" class="text-center mt-2 text-sm font-medium text-indigo-600"></p>
+                </div>
+              </label>
+              <p id="fileName" class="text-center mt-2 text-sm font-medium text-indigo-600"></p>
             </div>
+          </div>
+
+          <div class="mt-8">
+            <button id="analyzeButton" class="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 shadow-xl hover:shadow-blue-500/40">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 transition-transform" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+              Sugerir Códigos CID
+            </button>
+          </div>
         </div>
+
+        <!-- DASHBOARD ADMIN -->
+        <div id="admin-dashboard-area" class="hidden mt-8">
+          <h2 class="text-2xl font-semibold text-gray-800">Dashboard do Administrador</h2>
+          <p class="text-gray-500 mt-1">Análise de performance e frequência de codificação.</p>
+
+          <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="doctor-filter" class="block text-sm font-medium text-gray-700">Filtrar por Médico</label>
+              <select id="doctor-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                <option value="all">Todos os Médicos</option>
+                <option value="Dr. House">Dr. House</option>
+                <option value="Dr. Grey">Dr. Grey</option>
+                <option value="Dr. Strange">Dr. Strange</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="period-filter" class="block text-sm font-medium text-gray-700">Filtrar por Período</label>
+              <select id="period-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                <option>Últimos 30 dias</option>
+                <option>Últimos 90 dias</option>
+                <option>Este Ano</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="kpi-container" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-left"></div>
+
+          <div class="mt-10">
+            <h3 class="text-lg font-medium text-gray-900">Frequência de CIDs</h3>
+            <div class="mt-4 flex flex-col">
+              <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                  <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                      <thead class="bg-slate-50">
+                        <tr>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CID</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frequência</th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% do Total</th>
+                        </tr>
+                      </thead>
+                      <tbody id="cid-frequency-table" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="results" class="hidden mt-8">
+          <div id="loading" class="hidden flex justify-center items-center p-6">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+            <p class="ml-4 text-gray-600">Analisando nota clínica...</p>
+          </div>
+
+          <div id="result-content" class="hidden">
+            <h3 class="text-xl font-semibold text-text-primary border-b pb-3">Sugestões de CID-10</h3>
+            <p class="text-sm text-text-secondary mt-2">Clique em uma sugestão para ver a evidência no texto.</p>
+            <ul id="cid-list" class="mt-4 space-y-3"></ul>
+          </div>
+        </div>
+
+        <div id="error-message" class="hidden mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg"></div>
+      </div>
     </div>
 
-    <footer>
-        © 2024 CODEX.AI - Protótipo para fins de demonstração.
+    <footer class="text-center mt-8 text-sm text-gray-500">
+      <p>&copy; 2024 CODEX.AI - Protótipo para fins de demonstração.</p>
     </footer>
+  </div>
 
-    <script>
-        // -------------------- ELEMENTOS --------------------
-        const clinicalNoteInput = document.getElementById('clinicalNote');
-        const analyzeButton = document.getElementById('analyzeButton');
-        const clearButton = document.getElementById('clearButton');
-        const resultsSection = document.getElementById('resultsSection');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const resultContent = document.getElementById('resultContent');
-        const cidSuggestionsDiv = document.getElementById('cidSuggestions');
-        const errorMessage = document.getElementById('errorMessage');
+  <script>
+    // -------------------- ELEMENTOS --------------------
+    const loginScreen = document.getElementById('login-screen' );
+    const mainApp = document.getElementById('main-app');
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const usernameInput = document.getElementById('username');
+    const loggedInUser = document.getElementById('loggedInUser');
 
-        // --- NOVO CÓDIGO PARA CARREGAR DESCRIÇÕES ---
-        let cidDescriptions = {}; // Variável global para guardar o dicionário
+    const tabs = {
+      text: document.getElementById('tab-text'),
+      upload: document.getElementById('tab-upload'),
+      admin: document.getElementById('tab-admin'),
+    };
 
-        // Função para carregar o arquivo JSON
-        async function loadCidDescriptions() {
-            try {
-                const response = await fetch('./cid_descriptions.json');
-                if (!response.ok) {
-                    throw new Error('Não foi possível carregar as descrições dos CIDs.');
-                }
-                cidDescriptions = await response.json();
-                console.log('Descrições de CID carregadas com sucesso!');
-            } catch (error) {
-                console.error(error);
-                errorMessage.textContent = "Erro ao carregar dados essenciais da aplicação.";
-                errorMessage.classList.remove('hidden');
+    const analysisArea = document.getElementById('analysis-area');
+    const textInputArea = document.getElementById('text-input-area');
+    const uploadArea = document.getElementById('upload-area');
+    const adminDashboardArea = document.getElementById('admin-dashboard-area');
+
+    const clinicalNoteInput = document.getElementById('clinicalNote');
+    const highlightedTextDiv = document.getElementById('highlighted-text');
+    const fileUploadInput = document.getElementById('file-upload');
+    const fileNameDisplay = document.getElementById('fileName');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const resultsSection = document.getElementById('results');
+    const loadingSpinner = document.getElementById('loading');
+    const resultContent = document.getElementById('result-content');
+    const cidList = document.getElementById('cid-list');
+    const errorMessage = document.getElementById('error-message');
+
+    const doctorFilter = document.getElementById('doctor-filter');
+    const periodFilter = document.getElementById('period-filter');
+
+    let activeTab = 'text';
+
+    // --- NOVO CÓDIGO PARA CARREGAR DESCRIÇÕES ---
+    let cidDescriptions = {}; // Variável global para guardar o dicionário
+
+    // Função para carregar o arquivo JSON
+    async function loadCidDescriptions() {
+        try {
+            const response = await fetch('./cid_descriptions.json');
+            if (!response.ok) {
+                throw new Error('Não foi possível carregar as descrições dos CIDs.');
             }
+            cidDescriptions = await response.json();
+            console.log('Descrições de CID carregadas com sucesso!');
+        } catch (error) {
+            console.error(error);
+            errorMessage.textContent = "Erro ao carregar dados essenciais da aplicação.";
+            errorMessage.classList.remove('hidden');
         }
+    }
 
-        // Chama a função de carregamento quando a página é carregada
-        document.addEventListener('DOMContentLoaded', loadCidDescriptions);
-        // --- FIM DO NOVO CÓDIGO ---
+    // Chama a função de carregamento quando a página é carregada
+    document.addEventListener('DOMContentLoaded', loadCidDescriptions);
+    // --- FIM DO NOVO CÓDIGO ---
 
-        // -------------------- FUNÇÕES DE UI --------------------
-        function resetUI() {
-            errorMessage.classList.add('hidden');
-            resultsSection.classList.add('hidden');
-            loadingSpinner.classList.add('hidden');
-            resultContent.classList.add('hidden');
-            cidSuggestionsDiv.innerHTML = '';
-        }
+    // -------------------- TEXTO DEMO --------------------
+    const defaultClinicalNote = "Paciente, 58 anos, sexo masculino, chega à emergência com queixa de forte dor no peito há 2 horas, com irradiação para o braço esquerdo e mandíbula. Relata sudorese fria e náuseas. Histórico pessoal de hipertensão arterial sistêmica (HAS) e diabetes mellitus tipo 2, em uso irregular das medicações. Nega febre ou tosse. Ao exame, apresenta-se ansioso, com pressão arterial de 160/100 mmHg.";
+    clinicalNoteInput.value = defaultClinicalNote;
+    highlightedTextDiv.textContent = defaultClinicalNote;
 
-        function displayResults(predictions) {
-            cidSuggestionsDiv.innerHTML = ''; // Limpa resultados anteriores
-            if (predictions.length === 0) {
-                cidSuggestionsDiv.innerHTML = '<p>Nenhuma sugestão de CID encontrada.</p>';
-                return;
-            }
+    // Sincroniza texto/scroll (textarea -> div)
+    clinicalNoteInput.addEventListener('input', () => {
+      renderHighlightedText(clinicalNoteInput.value, []); // sem destaques enquanto digita
+    });
+    clinicalNoteInput.addEventListener('scroll', () => {
+      highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
+    });
 
-            predictions.forEach(prediction => {
-                const card = document.createElement('div');
-                card.classList.add('result-card');
-                card.innerHTML = `
-                    <div class="result-card-info">
-                        <h3>${prediction.cid} — ${prediction.label}</h3>
-                        <p>Confiança (simulada): ${prediction.score * 100}%</p>
-                        <p>Evidências: ${prediction.evidence || 'Nenhuma'}</p>
-                    </div>
-                    <div class="result-card-actions">
-                        <button title="Ver evidência"><i class="fas fa-search"></i></button>
-                    </div>
-                `;
-                cidSuggestionsDiv.appendChild(card);
-            });
-        }
+    // -------------------- AUTENTICAÇÃO --------------------
+    loginButton.addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      if (username) {
+        loggedInUser.textContent = username;
+        loginScreen.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+        mainApp.style.animation = 'fadeIn 0.5s ease-out';
+        switchTab('text');
+      }
+    });
 
-        // Função mock para encontrar evidências (pode ser melhorada)
-        function findEvidence(text, terms) {
-            let evidence = [];
-            terms.forEach(term => {
-                const regex = new RegExp(term.replace('.', '\\.'), 'gi'); // Escapa o ponto para regex
-                const matches = [...text.matchAll(regex)];
-                matches.forEach(match => {
-                    // Pega um trecho ao redor da palavra encontrada
-                    const start = Math.max(0, match.index - 30);
-                    const end = Math.min(text.length, match.index + term.length + 30);
-                    evidence.push(`...${text.substring(start, end).trim()}...`);
-                });
-            });
-            return evidence.join('; ') || 'Nenhuma evidência direta encontrada.';
-        }
+    logoutButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      usernameInput.value = '';
+      mainApp.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+      loginScreen.style.animation = 'fadeIn 0.5s ease-out';
+    });
 
-        // -------------------- EVENT LISTENERS --------------------
-        clearButton.addEventListener('click', () => {
-            clinicalNoteInput.value = '';
-            resetUI();
+    // -------------------- ABAS --------------------
+    Object.entries(tabs).forEach(([tabName, tabBtn]) => {
+      tabBtn.addEventListener('click', () => switchTab(tabName));
+    });
+
+    function switchTab(tabName) {
+      activeTab = tabName;
+
+      Object.values(tabs).forEach(btn => btn.classList.remove('active', 'text-gray-500'));
+      Object.entries(tabs).forEach(([name, btn]) => {
+        const isActive = name === tabName;
+        btn.classList.toggle('active', isActive);
+        btn.classList.toggle('text-gray-500', !isActive);
+      });
+
+      const isAnalysis = tabName === 'text' || tabName === 'upload';
+      analysisArea.classList.toggle('hidden', !isAnalysis);
+      adminDashboardArea.classList.toggle('hidden', tabName !== 'admin');
+
+      textInputArea.classList.toggle('hidden', tabName !== 'text');
+      uploadArea.classList.toggle('hidden', tabName !== 'upload');
+
+      // Limpa resultados e mensagens de erro ao trocar de aba
+      resetUI();
+      resetHighlight();
+    }
+
+    // -------------------- UPLOAD DE ARQUIVO (SIMULADO) --------------------
+    fileUploadInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        fileNameDisplay.textContent = `Arquivo selecionado: ${file.name}`;
+        // Simula leitura de arquivo para preencher a textarea
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          clinicalNoteInput.value = e.target.result;
+          highlightedTextDiv.textContent = e.target.result;
+        };
+        reader.readAsText(file);
+      } else {
+        fileNameDisplay.textContent = '';
+        clinicalNoteInput.value = '';
+        highlightedTextDiv.textContent = '';
+      }
+    });
+
+    // -------------------- ANALYZE BUTTON (API INTEGRATION) --------------------
+    analyzeButton.addEventListener('click', async () => {
+      resetUI();
+
+      const noteText = clinicalNoteInput.value;
+
+      if (noteText.trim() === '') {
+        errorMessage.textContent = "Por favor, insira uma nota clínica para análise.";
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+
+      resultsSection.classList.remove('hidden');
+      loadingSpinner.classList.remove('hidden');
+      resultContent.classList.add('hidden'); // Esconde o conteúdo anterior enquanto carrega
+
+      try {
+        const response = await fetch('/api/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ clinicalNote: noteText }),
         });
 
-        analyzeButton.addEventListener('click', async () => {
-            resetUI();
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Erro ${response.status}`);
+        }
 
-            const noteText = clinicalNoteInput.value;
+        const data = await response.json();
 
-            if (noteText.trim() === '') {
-                errorMessage.textContent = "Por favor, insira uma nota clínica para análise.";
-                errorMessage.classList.remove('hidden');
-                return;
-            }
-
-            resultsSection.classList.remove('hidden');
-            loadingSpinner.classList.remove('hidden');
-
-            try {
-                const response = await fetch('/api/predict', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ clinicalNote: noteText }),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Erro ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                const predictions = data.cids.map(item => {
-                    // Usa o dicionário carregado para obter a descrição
-                    const description = cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada para ${item.cid}`;
-                    
-                    return {
-                        cid: item.cid,
-                        label: description, // Usa a descrição real
-                        score: 1.0, // A API não retorna score, pode ser simulado ou removido
-                        evidence: findEvidence(noteText.toLowerCase(), [item.cid]),
-                        terms: [item.cid]
-                    };
-                });
-
-                loadingSpinner.classList.add('hidden');
-                displayResults(predictions);
-                resultContent.classList.remove('hidden');
-
-            } catch (error) {
-                console.error('Erro ao analisar:', error);
-                loadingSpinner.classList.add('hidden');
-                errorMessage.textContent = `Erro: ${error.message}. Verifique os logs da função na Vercel para mais detalhes.`;
-                errorMessage.classList.remove('hidden');
-            }
+        // Mapeia a resposta da API para o formato esperado pelo displayResults
+        const predictions = data.cids.map(item => {
+            // Usa o dicionário carregado para obter a descrição
+            const description = cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada para ${item.cid}`;
+            
+            return {
+                cid: item.cid,
+                label: description, // Usa a descrição real
+                score: 1.0, // A API não retorna score, pode ser simulado ou removido
+                evidence: findEvidence(noteText.toLowerCase(), [item.cid]),
+                terms: [item.cid]
+            };
         });
 
-    </script>
+        loadingSpinner.classList.add('hidden');
+        displayResults(predictions);
+        resultContent.classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Erro ao analisar:', error);
+        loadingSpinner.classList.add('hidden');
+        errorMessage.textContent = `Erro: ${error.message}. Verifique os logs da função na Vercel para mais detalhes.`;
+        errorMessage.classList.remove('hidden');
+      }
+    });
+
+    // -------------------- MOCK DASHBOARD DATA --------------------
+    const kpiData = [
+      { title: "Notas Analisadas", value: "1.234", icon: "fas fa-file-alt", color: "blue" },
+      { title: "CIDs Sugeridos", value: "5.678", icon: "fas fa-tags", color: "indigo" },
+      { title: "Acurácia (Simulada)", value: "92.5%", icon: "fas fa-check-circle", color: "green" },
+    ];
+
+    const cidFrequencyData = [
+      { code: "I10", desc: "Hipertensão essencial (primária)", count: 150 },
+      { code: "E11.9", desc: "Diabetes mellitus tipo 2 sem complicações", count: 120 },
+      { code: "J45.9", desc: "Asma, não especificada", count: 90 },
+      { code: "N18.9", desc: "Doença renal crônica não especificada", count: 75 },
+      { code: "K21.9", desc: "Doença de refluxo gastroesofágico sem esofagite", count: 60 },
+    ];
+
+    // -------------------- RENDER DASHBOARD --------------------
+    function renderDashboard() {
+      const kpiContainer = document.getElementById('kpi-container');
+      kpiContainer.innerHTML = '';
+      kpiData.forEach(kpi => {
+        const card = document.createElement('div');
+        card.className = `kpi-card bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 transform transition-transform duration-300`;
+        card.innerHTML = `
+          <div class="flex-shrink-0 bg-${kpi.color}-100 rounded-full p-3">
+            <i class="${kpi.icon} text-${kpi.color}-600 text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">${kpi.title}</p>
+            <p class="text-gray-900 text-2xl font-bold">${kpi.value}</p>
+          </div>
+        `;
+        kpiContainer.appendChild(card);
+      });
+
+      renderCidFrequencyTable(cidFrequencyData);
+    }
+
+    function renderCidFrequencyTable(data) {
+      const tableBody = document.getElementById('cid-frequency-table');
+      tableBody.innerHTML = '';
+      const total = data.reduce((sum, item) => sum + item.count, 0);
+
+      const dataToRender = [...data].sort((a, b) => b.count - a.count);
+
+      dataToRender.forEach(item => {
+        const pct = ((item.count / total) * 100).toFixed(1);
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.code}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${escapeHtml(item.desc)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${pct}%</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // -------------------- MOCK PREDICTIONS (REMOVIDO, AGORA VEM DA API) --------------------
+    // /**
+    //  * Retorna predições mockadas com evidências (índices do texto original).
+    //  * Cada item: { cid, label, score, evidence: [{start, end, text}], terms: [palavras] }
+    //  */
+    // function getPredictions(lowerText) {
+    //   // Palavras-chave -> CIDs (exemplos para demo)
+    //   const rules = [
+    //     { cid: 'I21.9', label: 'Infarto agudo do miocárdio, não especificado', terms: ['dor no peito', 'mandíbula', 'irradiação', 'sudorese'] },
+    //     { cid: 'I10',   label: 'Hipertensão essencial (primária)',            terms: ['hipertensão', 'has', 'pressão arterial', '160/100'] },
+    //     { cid: 'E11.9', label: 'Diabetes mellitus tipo 2 sem complicações',   terms: ['diabetes', 'dm2', 'diabetes mellitus tipo 2'] },
+    //     { cid: 'R11',   label: 'Náusea e vômitos',                            terms: ['náusea', 'nausea', 'vômito', 'vomito'] },
+    //     { cid: 'R07.4', label: 'Dor torácica, não especificada',              terms: ['dor no peito', 'dor torácica'] },
+    //   ];
+
+    //   const predictions = [];
+    //   rules.forEach(rule => {
+    //     const ev = findEvidence(lowerText, rule.terms);
+    //     if (ev.length) {
+    //       predictions.push({
+    //         cid: rule.cid,
+    //         label: rule.label,
+    //         score: +(0.75 + Math.random() * 0.2).toFixed(2), // mock score 0.75-0.95
+    //         evidence: ev,
+    //         terms: rule.terms
+    //       });
+    //     }
+    //   });
+
+    //   // Ordena por score decrescente só para ficar bonitinho
+    //   predictions.sort((a,b) => b.score - a.score);
+    //   return predictions;
+    // }
+
+    /**
+     * Encontra evidências (intervalos) para uma lista de termos no texto (lowercase).
+     * Retorna [{start, end, text}]
+     */
+    function findEvidence(lowerText, terms) {
+      const ev = [];
+      terms.forEach(t => {
+        let idx = 0;
+        while (idx !== -1) {
+          idx = lowerText.indexOf(t, idx);
+          if (idx !== -1) {
+            ev.push({ start: idx, end: idx + t.length, text: lowerText.slice(idx, idx + t.length) });
+            idx += t.length;
+          }
+        }
+      });
+      // Merge simples de overlaps
+      ev.sort((a,b)=>a.start-b.start);
+      const merged = [];
+      merged.forEach(e => {
+        const last = merged[merged.length-1];
+        if (!last || e.start > last.end) {
+          merged.push({...e});
+        } else {
+          last.end = Math.max(last.end, e.end);
+          last.text = lowerText.slice(last.start, last.end);
+        }
+      });
+      return merged;
+    }
+
+    // -------------------- EXIBIR RESULTADOS --------------------
+    function displayResults(predictions) {
+      cidList.innerHTML = '';
+      const originalText = clinicalNoteInput.value;
+
+      // montar lista
+      predictions.forEach((pred, idx) => {
+        const li = document.createElement('li');
+        li.className = "border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition";
+        li.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="font-semibold text-gray-900">${pred.cid} — ${escapeHtml(pred.label)}</p>
+              <p class="text-sm text-gray-500 mt-1">Confiança (simulada): ${(pred.score*100).toFixed(0)}%</p>
+              <p class="text-xs text-gray-400 mt-1">Evidências: ${pred.evidence.map(e => `<span class="highlight">${escapeHtml(e.text)}</span>`).join(' • ')}</p>
+            </div>
+            <button data-idx="${idx}" class="feedback-btn ml-4 inline-flex items-center justify-center rounded-full p-2 hover:bg-blue-50" title="Ver no texto">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.386a1 1 0 01-1.414 1.415l-4.387-4.387zM10 16a6 6 0 100-12 6 6 0 000 12z"/>
+              </svg>
+            </button>
+          </div>
+        `;
+        cidList.appendChild(li );
+      });
+
+      // renderizar o texto com destaques combinados de todas as evidências
+      const allEvidence = predictions.flatMap(p => p.evidence);
+      renderHighlightedText(originalText, allEvidence);
+
+      // clique em “ver no texto” -> rola para a primeira evidência daquele item
+      cidList.querySelectorAll('button[data-idx]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.idx, 10);
+          const ev = predictions[i].evidence;
+          if (!ev || ev.length === 0) return;
+
+          // Encontrar o span correspondente (o renderHighlightedText cria spans sequenciais)
+          const spans = highlightedTextDiv.querySelectorAll('span[data-ev="1"]');
+          if (spans.length) {
+            spans[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // “piscar” o highlight
+            spans[0].classList.add('ring-2', 'ring-indigo-400');
+            setTimeout(()=> spans[0].classList.remove('ring-2', 'ring-indigo-400'), 1200);
+          }
+        });
+      });
+    }
+
+    // -------------------- HIGHLIGHT NO TEXTO --------------------
+    function renderHighlightedText(originalText, evidenceList) {
+      // Se não houver evidência, só exibe texto puro escapado
+      if (!evidenceList || evidenceList.length === 0) {
+        highlightedTextDiv.innerHTML = escapeHtml(originalText);
+        // espelha rolagem
+        highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
+        return;
+      }
+
+      // Ordena e mescla ranges
+      const sorted = [...evidenceList].sort((a,b)=>a.start-b.start).map(e=>({start:e.start,end:e.end}));
+      const merged = [];
+      sorted.forEach(e => {
+        const last = merged[merged.length-1];
+        if (!last || e.start > last.end) merged.push({...e});
+        else last.end = Math.max(last.end, e.end);
+      });
+
+      // Monta HTML com spans
+      let html = '';
+      let cursor = 0;
+      for (const m of merged) {
+        if (cursor < m.start) {
+          html += escapeHtml(originalText.slice(cursor, m.start));
+        }
+        const chunk = originalText.slice(m.start, m.end);
+        html += `<span class="highlight" data-ev="1">${escapeHtml(chunk)}</span>`;
+        cursor = m.end;
+      }
+      html += escapeHtml(originalText.slice(cursor));
+      highlightedTextDiv.innerHTML = html;
+
+      // Sincroniza scroll
+      highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
+    }
+
+    // -------------------- UTILITÁRIOS UI --------------------
+    function resetUI() {
+      errorMessage.classList.add('hidden');
+      cidList.innerHTML = '';
+      resultContent.classList.add('hidden');
+      loadingSpinner.classList.add('hidden');
+    }
+
+    function resetHighlight() {
+      renderHighlightedText(clinicalNoteInput.value, []);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    // Inicializa o dashboard ao carregar a página principal
+    document.addEventListener('DOMContentLoaded', () => {
+      // Apenas renderiza o dashboard se a aba admin estiver ativa (simulação)
+      if (activeTab === 'admin') {
+        renderDashboard();
+      }
+    });
+
+  </script>
+</body>
+</html>
 </body>
 </html>
 
