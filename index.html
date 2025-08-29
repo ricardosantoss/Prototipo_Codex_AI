@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Protótipo - Preditor de CID - CODEX.AI</title>
+  <title>Protótipo (Versão Profissional) - Preditor de CID - CODEX.AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -29,8 +29,6 @@
     .loader { border-top-color: var(--brand-primary); animation: spinner 1.5s linear infinite; }
     @keyframes spinner { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
     .highlight { background-color:#dbeafe; border-radius:4px; padding:2px 4px; font-weight:500; color:#1e3a8a; }
-    .feedback-btn { transition: all 0.2s; }
-    .feedback-btn:hover { transform: scale(1.15); }
     .kpi-card:hover {
       transform: translateY(-6px);
       box-shadow: 0 10px 20px -5px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.07);
@@ -44,27 +42,40 @@
     .tab-button.active::after { transform: scaleX(1); }
     #analyzeButton:hover svg { animation: search-pulse 1s infinite; }
     @keyframes search-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
-    /* Oculta o texto cru e exibe o highlighter */
     #clinicalNote { color: transparent; caret-color: #111827; }
     #highlighted-text { white-space: pre-wrap; }
-    .cid-type-badge {
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 0.125rem 0.5rem;
-        border-radius: 9999px;
-        text-transform: capitalize;
-    }
-    .cid-type-principal { background-color: #fee2e2; color: #b91c1c; } /* red */
-    .cid-type-secundário { background-color: #ffedd5; color: #c2410c; } /* orange */
-    .cid-type-terciarios { background-color: #e0e7ff; color: #4338ca; } /* indigo */
 
+    /* --- ESTILOS PARA VALIDAÇÃO --- */
+    .validation-btn {
+        background-color: #f1f5f9; /* slate-100 */
+        border: 1px solid #e2e8f0; /* slate-200 */
+        color: #64748b; /* slate-500 */
+        transition: all 0.2s ease-in-out;
+    }
+    .validation-btn:hover:not(:disabled) {
+        transform: scale(1.1);
+    }
+    .validation-btn.correct {
+        background-color: #dcfce7; /* green-100 */
+        border-color: #86efac; /* green-300 */
+        color: #166534; /* green-800 */
+    }
+    .validation-btn.incorrect {
+        background-color: #fee2e2; /* red-100 */
+        border-color: #fca5a5; /* red-300 */
+        color: #991b1b; /* red-800 */
+    }
+    .validation-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
   </style>
 </head>
 <body class="flex items-center justify-center min-h-screen py-10">
 
   <div id="login-screen" class="w-full max-w-sm mx-auto">
     <div class="login-card bg-white p-8 rounded-2xl shadow-2xl text-center">
-      <img src="codex_ai_logo.png" alt="Logo da Empresa" class="mx-auto mb-6 h-20"/>
+      <img src="codex_ai_logo.png" alt="Logo CODEX.AI" class="mx-auto mb-6 h-20"/>
       <h2 class="text-2xl font-bold text-text-primary">Acesso à Plataforma</h2>
       <p class="text-text-secondary mt-2 mb-8">Entre com suas credenciais.</p>
       <div class="space-y-4">
@@ -100,29 +111,13 @@
 
         <div id="analysis-area">
           <h2 class="text-2xl font-semibold text-text-primary mt-8">Análise de Nota Clínica</h2>
-          <p class="text-text-secondary mt-1">Cole a nota clínica ou faça o upload para receber sugestões de CID-10.</p>
-
+          <p class="text-text-secondary mt-1">Cole a nota clínica para receber sugestões de CID-10.</p>
           <div class="mt-6">
             <div id="text-input-area">
               <div id="clinicalNoteContainer" class="relative">
-                <div id="highlighted-text" class="mt-1 block w-full p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent leading-relaxed" style="min-height: 192px;"></div>
-                <textarea id="clinicalNote" rows="8" class="absolute top-0 left-0 mt-1 block w-full p-4 bg-transparent border-none rounded-lg shadow-sm focus:outline-none leading-relaxed" placeholder="Cole a nota clínica aqui..."></textarea>
+                <div id="highlighted-text" class="mt-1 block w-full p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent leading-relaxed" style="min-height: 220px;"></div>
+                <textarea id="clinicalNote" rows="9" class="absolute top-0 left-0 mt-1 block w-full p-4 bg-transparent border-none rounded-lg shadow-sm focus:outline-none leading-relaxed" placeholder="Cole a nota clínica aqui..."></textarea>
               </div>
-            </div>
-
-            <div id="upload-area" class="hidden">
-              <label for="file-upload" class="mt-1 flex justify-center w-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-indigo-50 transition">
-                <div class="space-y-1 text-center">
-                  <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <div class="flex text-sm text-gray-600">
-                    <p class="pl-1">Clique para selecionar ou arraste o arquivo</p>
-                    <input id="file-upload" name="file-upload" type="file" class="sr-only"/>
-                  </div>
-                  <p id="fileName" class="text-center mt-2 text-sm font-medium text-indigo-600"></p>
-                </div>
-              </label>
             </div>
           </div>
 
@@ -134,29 +129,20 @@
           </div>
         </div>
 
-        <div id="admin-dashboard-area" class="hidden mt-8">
-           </div>
-
         <div id="results" class="hidden mt-8">
           <div id="loading" class="hidden flex justify-center items-center p-6">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
             <p class="ml-4 text-gray-600">Analisando nota clínica...</p>
           </div>
-
           <div id="result-content" class="hidden">
             <h3 class="text-xl font-semibold text-text-primary border-b pb-3">Sugestões de CID-10</h3>
-            <p class="text-sm text-text-secondary mt-2">Passe o mouse sobre uma sugestão para ver a evidência no texto.</p>
+            <p class="text-sm text-text-secondary mt-2">Passe o mouse sobre uma sugestão para destacar a evidência no texto. Valide o resultado.</p>
             <ul id="cid-list" class="mt-4 space-y-3"></ul>
           </div>
         </div>
-
         <div id="error-message" class="hidden mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg"></div>
       </div>
     </div>
-
-    <footer class="text-center mt-8 text-sm text-gray-500">
-      <p>&copy; 2024 CODEX.AI - Protótipo para fins de demonstração.</p>
-    </footer>
   </div>
 
   <script>
@@ -167,61 +153,42 @@
     const logoutButton = document.getElementById('logoutButton');
     const usernameInput = document.getElementById('username');
     const loggedInUser = document.getElementById('loggedInUser');
-
-    const tabs = {
-      text: document.getElementById('tab-text'),
-      upload: document.getElementById('tab-upload'),
-      admin: document.getElementById('tab-admin'),
-    };
-
+    const tabs = { text: document.getElementById('tab-text'), upload: document.getElementById('tab-upload'), admin: document.getElementById('tab-admin') };
     const analysisArea = document.getElementById('analysis-area');
     const textInputArea = document.getElementById('text-input-area');
-    const uploadArea = document.getElementById('upload-area');
-    const adminDashboardArea = document.getElementById('admin-dashboard-area');
-
     const clinicalNoteInput = document.getElementById('clinicalNote');
     const highlightedTextDiv = document.getElementById('highlighted-text');
-    const fileUploadInput = document.getElementById('file-upload');
-    const fileNameDisplay = document.getElementById('fileName');
     const analyzeButton = document.getElementById('analyzeButton');
     const resultsSection = document.getElementById('results');
     const loadingSpinner = document.getElementById('loading');
     const resultContent = document.getElementById('result-content');
     const cidList = document.getElementById('cid-list');
     const errorMessage = document.getElementById('error-message');
-
-    let cidDescriptions = {}; // Variável global para guardar o dicionário
+    let cidDescriptions = {};
 
     // -------------------- CARREGAR DESCRIÇÕES CID --------------------
     async function loadCidDescriptions() {
         try {
-            // Crie um arquivo cids.json no seu projeto ou use uma URL pública
+            // Crie um arquivo cids.json no seu projeto
             const response = await fetch('./cids.json');
-            if (!response.ok) {
-                throw new Error('Não foi possível carregar as descrições dos CIDs.');
-            }
+            if (!response.ok) throw new Error('Não foi possível carregar cids.json');
             cidDescriptions = await response.json();
-            console.log('Descrições de CID carregadas com sucesso!');
+            console.log('Descrições de CID carregadas!');
         } catch (error) {
             console.error(error);
-            errorMessage.textContent = "Erro ao carregar dados essenciais (cids.json). Verifique o console.";
+            errorMessage.textContent = "Erro ao carregar dados essenciais (cids.json).";
             errorMessage.classList.remove('hidden');
         }
     }
-
     document.addEventListener('DOMContentLoaded', loadCidDescriptions);
 
     // -------------------- TEXTO DEMO E SINCRONIZAÇÃO --------------------
-    const defaultClinicalNote = "Paciente, 58 anos, sexo masculino, chega à emergência com queixa de forte dor no peito há 2 horas, com irradiação para o braço esquerdo e mandíbula. Relata sudorese fria e náuseas. Histórico pessoal de hipertensão arterial sistêmica (HAS) e diabetes mellitus tipo 2, em uso irregular das medicações. Nega febre ou tosse. Ao exame, apresenta-se ansioso, com pressão arterial de 160/100 mmHg.";
+    const defaultClinicalNote = "Paciente G1P0 com 39 semanas e 2 dias de idade gestacional, deu entrada no serviço de emergência com queixa de cefaleia frontal persistente, escotomas e dor epigástrica. Paciente com diagnóstico de Diabetes Mellitus Gestacional desde a 28ª semana. Ao exame, PA: 165/110 mmHg e proteinúria significativa (3+), sendo diagnosticada com pré-eclâmpsia grave. Durante a monitorização, a cardiotocografia fetal evidenciou desacelerações tardias, compatível com quadro de sofrimento fetal agudo, sendo indicada cesariana de emergência.";
     clinicalNoteInput.value = defaultClinicalNote;
     highlightedTextDiv.textContent = defaultClinicalNote;
 
-    clinicalNoteInput.addEventListener('input', () => {
-      renderHighlightedText(clinicalNoteInput.value, []);
-    });
-    clinicalNoteInput.addEventListener('scroll', () => {
-      highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
-    });
+    clinicalNoteInput.addEventListener('input', () => renderHighlightedText(clinicalNoteInput.value, []));
+    clinicalNoteInput.addEventListener('scroll', () => highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop);
 
     // -------------------- AUTENTICAÇÃO E ABAS --------------------
     loginButton.addEventListener('click', () => {
@@ -230,14 +197,12 @@
         loggedInUser.textContent = username;
         loginScreen.classList.add('hidden');
         mainApp.classList.remove('hidden');
-        mainApp.style.animation = 'fadeIn 0.5s ease-out';
         switchTab('text');
       }
     });
 
     logoutButton.addEventListener('click', (e) => {
       e.preventDefault();
-      usernameInput.value = '';
       mainApp.classList.add('hidden');
       loginScreen.classList.remove('hidden');
     });
@@ -249,44 +214,22 @@
     function switchTab(tabName) {
       Object.values(tabs).forEach(btn => btn.classList.remove('active'));
       tabs[tabName].classList.add('active');
-
-      analysisArea.classList.toggle('hidden', tabName === 'admin');
-      adminDashboardArea.classList.toggle('hidden', tabName !== 'admin');
-      textInputArea.classList.toggle('hidden', tabName !== 'text');
-      uploadArea.classList.toggle('hidden', tabName !== 'upload');
-
+      analysisArea.style.display = (tabName === 'admin' ? 'none' : 'block');
       resetUI();
       renderHighlightedText(clinicalNoteInput.value, []);
     }
 
-    // -------------------- UPLOAD DE ARQUIVO --------------------
-    fileUploadInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        fileNameDisplay.textContent = `Arquivo selecionado: ${file.name}`;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          clinicalNoteInput.value = e.target.result;
-          highlightedTextDiv.textContent = e.target.result;
-        };
-        reader.readAsText(file);
-      }
-    });
-
-    // -------------------- CHAMADA À API (LÓGICA CORRIGIDA) --------------------
+    // -------------------- CHAMADA À API --------------------
     analyzeButton.addEventListener('click', async () => {
       resetUI();
       const noteText = clinicalNoteInput.value;
-
       if (noteText.trim() === '') {
-        errorMessage.textContent = "Por favor, insira uma nota clínica para análise.";
+        errorMessage.textContent = "Por favor, insira uma nota clínica.";
         errorMessage.classList.remove('hidden');
         return;
       }
-
       resultsSection.classList.remove('hidden');
       loadingSpinner.classList.remove('hidden');
-      resultContent.classList.add('hidden');
 
       try {
         const response = await fetch('/api/predict', {
@@ -294,154 +237,133 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ clinicalNote: noteText }),
         });
-
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.details || errorData.error || `Erro HTTP ${response.status}`);
+          const err = await response.json();
+          throw new Error(err.details || err.error || `Erro HTTP ${response.status}`);
         }
-
         const data = await response.json();
-
-        // ✅ LÓGICA CORRIGIDA AQUI
-        const predictions = data.cids.map(item => {
-            const description = cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada para ${item.cid}`;
-            const evidenceStrings = item.evidencia || [];
-            // Usa a função 'findEvidence' para localizar os trechos que a API retornou
-            const evidenceObjects = findEvidence(noteText, evidenceStrings);
-
-            return {
-                cid: item.cid,
-                label: description,
-                tipo: item.tipo || 'terciario', // Garante que 'tipo' sempre exista
-                evidence: evidenceObjects,
-            };
-        });
-
-        loadingSpinner.classList.add('hidden');
+        const predictions = data.cids.map(item => ({
+            cid: item.cid,
+            label: cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada`,
+            evidence: findEvidence(noteText, item.evidencia || []),
+        }));
         displayResults(predictions);
-        resultContent.classList.remove('hidden');
-
       } catch (error) {
         console.error('Erro ao analisar:', error);
-        loadingSpinner.classList.add('hidden');
-        errorMessage.textContent = `Erro: ${error.message}. Verifique o console e os logs da Vercel.`;
+        errorMessage.textContent = `Erro: ${error.message}`;
         errorMessage.classList.remove('hidden');
+      } finally {
+        loadingSpinner.classList.add('hidden');
+        resultContent.classList.remove('hidden');
       }
     });
     
-    // -------------------- FUNÇÃO findEvidence (CORRIGIDA E MELHORADA) --------------------
-    /**
-     * Encontra a posição exata de uma lista de termos de evidência no texto original.
-     * Retorna um array de objetos: [{start, end, text}]
-     */
+    // -------------------- LÓGICA DE EVIDÊNCIA E DESTAQUE --------------------
     function findEvidence(originalText, terms) {
         const lowerText = originalText.toLowerCase();
-        const ev = [];
-        
+        const ev = new Set(); // Usar Set para evitar duplicatas simples
         terms.forEach(term => {
             const lowerTerm = term.toLowerCase();
             if (lowerTerm.trim() === '') return;
-            
-            let lastIndex = 0;
-            while (lastIndex !== -1) {
-                const foundIndex = lowerText.indexOf(lowerTerm, lastIndex);
-                if (foundIndex !== -1) {
-                    ev.push({
-                        start: foundIndex,
-                        end: foundIndex + lowerTerm.length,
-                        text: originalText.slice(foundIndex, foundIndex + lowerTerm.length)
-                    });
-                    lastIndex = foundIndex + lowerTerm.length;
-                } else {
-                    lastIndex = -1;
-                }
+            let i = -1;
+            while ((i = lowerText.indexOf(lowerTerm, i + 1)) !== -1) {
+                ev.add(JSON.stringify({
+                    start: i,
+                    end: i + lowerTerm.length,
+                    text: originalText.slice(i, i + lowerTerm.length)
+                }));
             }
         });
-
-        // Ordena e mescla evidências que se sobrepõem
-        ev.sort((a, b) => a.start - b.start);
-        const merged = [];
-        // ✅ BUG CORRIGIDO AQUI (era merged.forEach)
-        ev.forEach(current => {
-            const last = merged[merged.length - 1];
-            if (!last || current.start > last.end) {
-                merged.push({ ...current });
-            } else {
-                last.end = Math.max(last.end, current.end);
-                last.text = originalText.slice(last.start, last.end);
-            }
-        });
-        return merged;
+        return Array.from(ev).map(e => JSON.parse(e)).sort((a,b) => a.start - b.start);
     }
 
+    function renderHighlightedText(originalText, evidenceList) {
+      if (!evidenceList || evidenceList.length === 0) {
+        highlightedTextDiv.innerHTML = escapeHtml(originalText);
+        return;
+      }
+      let html = '';
+      let cursor = 0;
+      evidenceList.forEach(ev => {
+        html += escapeHtml(originalText.slice(cursor, ev.start));
+        html += `<span class="highlight">${escapeHtml(ev.text)}</span>`;
+        cursor = ev.end;
+      });
+      html += escapeHtml(originalText.slice(cursor));
+      highlightedTextDiv.innerHTML = html;
+    }
 
-    // -------------------- EXIBIR RESULTADOS (UI MELHORADA) --------------------
+    // -------------------- EXIBIR RESULTADOS (COM VALIDAÇÃO) --------------------
     function displayResults(predictions) {
         cidList.innerHTML = '';
-
-        predictions.forEach((pred) => {
+        predictions.forEach((pred, index) => {
             const li = document.createElement('li');
-            li.className = "cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition cursor-pointer";
-            li.dataset.evidence = JSON.stringify(pred.evidence); // Guarda a evidência no elemento
+            li.className = "cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors duration-200";
+            li.dataset.evidence = JSON.stringify(pred.evidence);
 
-            // ✅ UI ATUALIZADA: Sem confiança, com tipo e evidências mais claras.
             li.innerHTML = `
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="flex items-center gap-3">
-                     <p class="font-semibold text-gray-900">${pred.cid} — ${escapeHtml(pred.label)}</p>
-                     <span class="cid-type-badge cid-type-${pred.tipo}">${escapeHtml(pred.tipo)}</span>
-                  </div>
+              <div class="flex items-center justify-between">
+                <div class="flex-grow">
+                  <p class="font-semibold text-gray-900">${pred.cid} — ${escapeHtml(pred.label)}</p>
                   <div class="text-xs text-gray-500 mt-2">
                     <span class="font-medium">Evidências:</span>
                     ${pred.evidence.map(e => `<span class="italic">"${escapeHtml(e.text)}"</span>`).join(' • ')}
                   </div>
                 </div>
-                <div class="ml-4 flex-shrink-0">
-                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                     <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                   </svg>
+                <div class="flex-shrink-0 ml-4 flex items-center space-x-2">
+                    <button class="validation-btn p-2 rounded-full" data-action="correct" data-cid="${pred.cid}" title="Correto">
+                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <button class="validation-btn p-2 rounded-full" data-action="incorrect" data-cid="${pred.cid}" title="Incorreto">
+                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                    </button>
                 </div>
               </div>
             `;
             cidList.appendChild(li);
         });
         
-        // Adiciona eventos de mouse para destacar o texto
+        // Eventos de mouse para destacar texto
         cidList.querySelectorAll('.cid-item').forEach(item => {
             item.addEventListener('mouseenter', () => {
                 const evidence = JSON.parse(item.dataset.evidence);
                 renderHighlightedText(clinicalNoteInput.value, evidence);
             });
-            item.addEventListener('mouseleave', () => {
-                renderHighlightedText(clinicalNoteInput.value, []);
+            item.addEventListener('mouseleave', () => renderHighlightedText(clinicalNoteInput.value, []));
+        });
+
+        // Eventos de clique para botões de validação
+        cidList.querySelectorAll('.validation-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evita que o evento de mouseenter/leave do 'li' seja acionado
+                
+                const currentButton = e.currentTarget;
+                const action = currentButton.dataset.action;
+                const cid = currentButton.dataset.cid;
+                const parent = currentButton.parentElement;
+
+                const correctBtn = parent.querySelector('[data-action="correct"]');
+                const incorrectBtn = parent.querySelector('[data-action="incorrect"]');
+
+                // Reseta estado
+                correctBtn.classList.remove('correct');
+                incorrectBtn.classList.remove('incorrect');
+                correctBtn.disabled = false;
+                incorrectBtn.disabled = false;
+
+                // Aplica estado ativo
+                if (action === 'correct') {
+                    correctBtn.classList.add('correct');
+                    incorrectBtn.disabled = true;
+                } else {
+                    incorrectBtn.classList.add('incorrect');
+                    correctBtn.disabled = true;
+                }
+                
+                // Aqui você enviaria o feedback para o backend
+                console.log(`Feedback: CID ${cid} foi marcado como ${action}.`);
             });
         });
-    }
-
-    // -------------------- HIGHLIGHT NO TEXTO --------------------
-    function renderHighlightedText(originalText, evidenceList) {
-      if (!evidenceList || evidenceList.length === 0) {
-        highlightedTextDiv.innerHTML = escapeHtml(originalText);
-        return;
-      }
-      
-      let html = '';
-      let cursor = 0;
-      evidenceList.forEach(ev => {
-        if (cursor < ev.start) {
-          html += escapeHtml(originalText.slice(cursor, ev.start));
-        }
-        html += `<span class="highlight">${escapeHtml(ev.text)}</span>`;
-        cursor = ev.end;
-      });
-
-      if (cursor < originalText.length) {
-        html += escapeHtml(originalText.slice(cursor));
-      }
-      
-      highlightedTextDiv.innerHTML = html;
     }
 
     // -------------------- UTILITÁRIOS UI --------------------
@@ -449,21 +371,14 @@
       errorMessage.classList.add('hidden');
       resultsSection.classList.add('hidden');
       cidList.innerHTML = '';
-      resultContent.classList.add('hidden');
       loadingSpinner.classList.add('hidden');
     }
 
     function escapeHtml(str) {
-      return String(str)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
+      return String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m]);
     }
   </script>
 </body>
 </html>
-
 
 
