@@ -33,7 +33,7 @@ Nada além desse JSON — sem comentários ou campos extras.`;
   try {
     // 3. Chamada para a API da OpenAI
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Ou "gpt-4o" para máxima qualidade
+      model: "gpt-4o-mini-2024-07-18", // Ou "gpt-4o" para máxima qualidade
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: clinicalNote }
