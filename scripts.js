@@ -319,29 +319,55 @@ function analyzeNote() {
     
     showLoading();
     
-    // Simulate API call
-    setTimeout(() => {
+    fetch("/api/predict", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ clinicalNote: noteText })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.details || err.error || `Erro HTTP ${response.status}`); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        const predictions = data.cids.map(item => ({
+            cid: item.cid,
+            label: cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada`,
+            evidence: findEvidence(noteText, item.evidencia || []),
+        }));
+        showAnalysisResults(predictions, noteText);
+    })
+    .catch(error => {
+        console.error('Erro ao analisar:', error);
+        showError(`Erro: ${error.message}`);
+    })
+    .finally(() => {
         hideLoading();
-        showAnalysisResults();
-    }, 2000);
+    });
 }
 
-function showAnalysisResults() {
+function showAnalysisResults(predictions, noteText) {
     const resultsSection = document.getElementById('analysis-results');
     const cidList = document.getElementById('cid-suggestions');
     
     cidList.innerHTML = '';
     
-    sampleCidSuggestions.forEach(suggestion => {
+    predictions.forEach(prediction => {
         const cidItem = document.createElement('div');
         cidItem.className = 'cid-item';
         cidItem.innerHTML = `
             <div class="cid-info">
-                <h4>${suggestion.cid}</h4>
-                <p>${suggestion.description}</p>
+                <h4>${prediction.cid}</h4>
+                <p>${prediction.label}</p>
             </div>
-            <div class="confidence-score">${suggestion.confidence}%</div>
         `;
+
+        cidItem.addEventListener('mouseenter', () => renderHighlightedText(noteText, prediction.evidence));
+        cidItem.addEventListener('mouseleave', () => renderHighlightedText(noteText, []));
+
         cidList.appendChild(cidItem);
     });
     
@@ -531,3 +557,111 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
+
+
+
+// -------------------- LÓGICA DE EVIDÊNCIA E DESTAQUE --------------------
+function findEvidence(originalText, terms) {
+    const lowerText = originalText.toLowerCase();
+    const ev = new Set();
+    terms.forEach(term => {
+        const lowerTerm = term.toLowerCase();
+        if (lowerTerm.trim() === \'\') return;
+        let i = -1;
+        while ((i = lowerText.indexOf(lowerTerm, i + 1)) !== -1) {
+            ev.add(JSON.stringify({
+                start: i, end: i + lowerTerm.length,
+                text: originalText.slice(i, i + lowerTerm.length)
+            }));
+        }
+    });
+    return Array.from(ev).map(e => JSON.parse(e)).sort((a, b) => a.start - b.start);
+}
+
+function renderHighlightedText(text, evidences) {
+    const highlightedTextDiv = document.getElementById(\'highlighted-text\');
+    highlightedTextDiv.innerHTML = \'\';
+    let lastIndex = 0;
+
+    evidences.forEach(evidence => {
+        if (evidence.start > lastIndex) {
+            highlightedTextDiv.appendChild(document.createTextNode(text.substring(lastIndex, evidence.start)));
+        }
+        const span = document.createElement(\'span\');
+        span.className = \'highlight\';
+        span.textContent = text.substring(evidence.start, evidence.end);
+        highlightedTextDiv.appendChild(span);
+        lastIndex = evidence.end;
+    });
+
+    if (lastIndex < text.length) {
+        highlightedTextDiv.appendChild(document.createTextNode(text.substring(lastIndex)));
+    }
+
+    // Sincronizar scroll da textarea com a div de destaque
+    const clinicalNoteInput = document.getElementById(\'clinical-note\');
+    highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
+}
+
+// -------------------- FUNÇÕES AUXILIARES --------------------
+function formatFileSize(bytes) {
+    if (bytes === 0) return \'0 Bytes\';
+    const k = 1024;
+    const sizes = [\'Bytes\', \'KB\', \'MB\', \'GB\', \'TB\'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + \' \' + sizes[i];
+}
+
+// Variáveis e funções do script original que precisam ser declaradas ou adaptadas
+let cidDescriptions = {};
+
+async function loadCidDescriptions() {
+    try {
+        const response = await fetch(\'./cids.json\');
+        if (!response.ok) throw new Error(\'Não foi possível carregar cids.json\');
+        cidDescriptions = await response.json();
+        console.log(\'Descrições de CID carregadas!\');
+    } catch (error) {
+        console.error(error);
+        showError("Erro ao carregar dados essenciais (cids.json).");
+    }
+}
+
+// Chamar loadCidDescriptions ao carregar a página
+document.addEventListener(\'DOMContentLoaded\', loadCidDescriptions);
+
+// Sincronização inicial da textarea com a div de destaque
+const clinicalNoteInput = document.getElementById(\'clinical-note\');
+const highlightedTextDiv = document.getElementById(\'highlighted-text\');
+
+if (clinicalNoteInput && highlightedTextDiv) {
+    clinicalNoteInput.addEventListener(\'input\', () => renderHighlightedText(clinicalNoteInput.value, []));
+    clinicalNoteInput.addEventListener(\'scroll\', () => highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop);
+    // Renderiza o texto inicial ao carregar a página
+    renderHighlightedText(clinicalNoteInput.value, []);
+}
+
+// Função resetUI (necessária para o fluxo do script original)
+function resetUI() {
+    document.getElementById(\'results\').classList.add(\'hidden\');
+    document.getElementById(\'loading\').classList.add(\'hidden\');
+    document.getElementById(\'error-message\').classList.add(\'hidden\');
+    document.getElementById(\'result-content\').classList.add(\'hidden\');
+    document.getElementById(\'cid-suggestions\').innerHTML = \'\';
+    renderHighlightedText(document.getElementById(\'clinical-note\').value, []);
+}
+
+// Adicionar o evento de input para a clinicalNoteInput para renderizar o texto destacado
+// Isso já foi adicionado acima, mas garantindo que esteja presente e funcional.
+// clinicalNoteInput.addEventListener(\'input\', () => renderHighlightedText(clinicalNoteInput.value, []));
+
+// Adicionar o evento de scroll para a clinicalNoteInput para sincronizar o scroll
+// Isso já foi adicionado acima, mas garantindo que esteja presente e funcional.
+// clinicalNoteInput.addEventListener(\'scroll\', () => highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop);
+
+// Certificar-se de que o analyzeButton está referenciado corretamente
+// const analyzeButton = document.getElementById(\'analyzeButton\');
+// if (analyzeButton) {
+//     analyzeButton.addEventListener(\'click\', analyzeNote);
+// }
+
