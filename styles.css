@@ -139,25 +139,17 @@ body {
 
 /* Enhanced Input Styles */
 #clinicalNote {
-    opacity: 0; /* deixa invisível, mas ainda editável */
-    caret-color: #1e293b; /* NOVO: Melhora a renderização do cursor e seleção */
+    opacity: 0;               /* oculta o texto renderizado */
+    caret-color: var(--text-primary); /* mantém o cursor visível */
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    resize: none;
     border: none;
     background: transparent;
+    resize: none;
     z-index: 2;
-    /* NOVO: Força renderização sem antialiasing excessivo */
-    -webkit-font-smoothing: subpixel-antialiased;
-    text-rendering: geometricPrecision;
-    /* NOVO: Evita blur por transformações */
-    transform: none !important;
-    filter: none !important;
-    /* NOVO: Garante que o texto não seja renderizado com blur */
-    font-synthesis: none;
 }
 
 #clinicalNote:focus {
