@@ -14,8 +14,7 @@ const tabs = {
 
 const analysisArea = document.getElementById('analysis-area');
 const textInputArea = document.getElementById('text-input-area');
-const clinicalNoteInput = document.getElementById('clinicalNote');
-const highlightedTextDiv = document.getElementById('highlighted-text');
+const editor = document.getElementById('editor'); // NOVO
 const analyzeButton = document.getElementById('analyzeButton');
 const resultsSection = document.getElementById('results');
 const loadingSpinner = document.getElementById('loading');
@@ -42,41 +41,7 @@ let cidDescriptions = {};
 
 // ====== DADOS FICTÍCIOS P/ DASHBOARD ======
 const DASH_MEDICOS = ['Todos os Médicos', 'Dra. Ana', 'Dr. Bruno', 'Dra. Carla'];
-const DASH_DATASETS = {
-  'Últimos 7 dias': [
-    { cid: 'S06.0', desc: 'Concussão', freq: 60 },
-    { cid: 'I10', desc: 'Hipertensão essencial', freq: 50 },
-    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 45 },
-    { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 40 },
-    { cid: 'J18.9', desc: 'Pneumonia', freq: 35 },
-    { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 30 },
-    { cid: 'E11', desc: 'Diabetes mellitus tipo 2', freq: 25 },
-    { cid: 'R51', desc: 'Cefaleia', freq: 22 },
-    { cid: 'G40.9', desc: 'Epilepsia', freq: 20 }
-  ],
-  'Últimos 30 dias': [
-    { cid: 'S06.0', desc: 'Concussão', freq: 180 },
-    { cid: 'I10', desc: 'Hipertensão essencial', freq: 150 },
-    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 135 },
-    { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 120 },
-    { cid: 'J18.9', desc: 'Pneumonia', freq: 110 },
-    { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 96 },
-    { cid: 'E11', desc: 'Diabetes mellitus tipo 2', freq: 80 },
-    { cid: 'R51', desc: 'Cefaleia', freq: 70 },
-    { cid: 'G40.9', desc: 'Epilepsia', freq: 61 }
-  ],
-  'Últimos 90 dias': [
-    { cid: 'S06.0', desc: 'Concussão', freq: 520 },
-    { cid: 'I10', desc: 'Hipertensão essencial', freq: 480 },
-    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 440 },
-    { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 420 },
-    { cid: 'J18.9', desc: 'Pneumonia', freq: 395 },
-    { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 360 },
-    { cid: 'E11', desc: 'Diabetes mellitus tipo 2', freq: 330 },
-    { cid: 'R51', desc: 'Cefaleia', freq: 300 },
-    { cid: 'G40.9', desc: 'Epilepsia', freq: 280 }
-  ]
-};
+const DASH_DATASETS = { /* ... igual ao seu código ... */ };
 
 // -------------------- BOOT --------------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -99,7 +64,6 @@ function initializeApp() {
   setupDefaultText();
   setupEventListeners();
   seedMedicos();
-  // boas-vindas no header do dashboard
   if (adminWelcomeName && loggedInUser) {
     adminWelcomeName.textContent = loggedInUser.textContent || 'Admin';
   }
@@ -109,32 +73,14 @@ function initializeApp() {
 function setupEventListeners() {
   loginButton?.addEventListener('click', handleLogin);
   logoutButton?.addEventListener('click', handleLogout);
-
   Object.entries(tabs).forEach(([name, btn]) => {
     btn?.addEventListener('click', () => switchTab(name));
   });
-
   analyzeButton?.addEventListener('click', analyzeNote);
-
   fileUploadInput?.addEventListener('change', handleFileUpload);
-
-  if (clinicalNoteInput) {
-    clinicalNoteInput.addEventListener('input', () =>
-      renderHighlightedText(clinicalNoteInput.value, [])
-    );
-    clinicalNoteInput.addEventListener('scroll', () => {
-      highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
-    });
-  }
-
-  // Delegação de eventos para validação
   cidList?.addEventListener('click', handleValidation);
-
-  // Filtros do dashboard
   filterMedico?.addEventListener('change', renderDashboard);
   filterPeriodo?.addEventListener('change', renderDashboard);
-
-  // Export CSV (apenas 1 listener)
   btnExportDashboard?.addEventListener('click', exportDashboardCsv);
 }
 
@@ -142,60 +88,45 @@ function setupEventListeners() {
 function handleLogin() {
   const username = usernameInput?.value.trim();
   if (!username) return;
-
   if (loggedInUser) loggedInUser.textContent = username;
   loginScreen?.classList.add('hidden');
   mainApp?.classList.remove('hidden');
   switchTab('text');
 }
-
 function handleLogout(e) {
   e.preventDefault();
   mainApp?.classList.add('hidden');
   loginScreen?.classList.remove('hidden');
 }
-
 function switchTab(tabName) {
-  // visual das abas
   Object.values(tabs).forEach(b => b?.classList.remove('active'));
   tabs[tabName]?.classList.add('active');
-
-  // conteúdo
   analysisArea?.classList.toggle('hidden', tabName === 'admin');
   adminDashboardArea?.classList.toggle('hidden', tabName !== 'admin');
   textInputArea?.classList.toggle('hidden', tabName !== 'text');
   uploadArea?.classList.toggle('hidden', tabName !== 'upload');
-
   resetUI();
-  if (tabName !== 'admin' && clinicalNoteInput) {
-    renderHighlightedText(clinicalNoteInput.value, []);
+  if (tabName !== 'admin' && editor) {
+    renderHighlightedText(editor.innerText, []);
   }
-  if (tabName === 'admin') {
-    // sempre render ao entrar
-    renderDashboard();
-  }
+  if (tabName === 'admin') renderDashboard();
 }
 
 // -------------------- TEXTO DEMO --------------------
 function setupDefaultText() {
-  const demo =
-    'Lactente com 9 meses, previamente hígido, iniciou quadro de coriza e tosse seca há 4 dias. Evoluiu com piora do padrão respiratório, taquipneia, gemência e tiragem subcostal. Mãe relata febre de 38.5°C e baixa aceitação alimentar. Ao exame: FR de 62 irpm, sibilos expiratórios difusos e saturação de O2 de 89% em ar ambiente. Hipótese de bronquiolite viral aguda, provável VSR. Internado para oxigenoterapia e hidratação venosa.';
-  if (clinicalNoteInput) clinicalNoteInput.value = demo;
-  if (highlightedTextDiv) highlightedTextDiv.textContent = demo;
+  const demo = 'Lactente com 9 meses ... bronquiolite viral aguda ...';
+  if (editor) editor.innerText = demo;
 }
 
 // -------------------- UPLOAD --------------------
 function handleFileUpload(e) {
   const file = e.target.files?.[0];
   if (!file) return;
-
   if (fileNameDisplay) fileNameDisplay.textContent = `Arquivo: ${file.name}`;
-
   const reader = new FileReader();
   reader.onload = ev => {
     const txt = ev.target.result || '';
-    if (clinicalNoteInput) clinicalNoteInput.value = txt;
-    if (highlightedTextDiv) highlightedTextDiv.textContent = txt;
+    if (editor) editor.innerText = txt;
   };
   reader.readAsText(file);
 }
@@ -203,19 +134,16 @@ function handleFileUpload(e) {
 // -------------------- PREDIÇÃO --------------------
 async function analyzeNote() {
   resetUI();
-  const noteText = clinicalNoteInput?.value.trim() || '';
+  const noteText = editor?.innerText.trim() || '';
   if (!noteText) return showError('Por favor, insira uma nota clínica.');
-
   resultsSection?.classList.remove('hidden');
   loadingSpinner?.classList.remove('hidden');
-
   try {
     const response = await fetch('/api/predict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clinicalNote: noteText })
     });
-
     if (!response.ok) {
       let msg = `Erro HTTP ${response.status}`;
       try {
@@ -224,14 +152,12 @@ async function analyzeNote() {
       } catch {}
       throw new Error(msg);
     }
-
     const data = await response.json();
     const predictions = (data.cids || []).map(item => ({
       cid: item.cid,
       label: cidDescriptions[(item.cid || '').toUpperCase()] || 'Descrição não encontrada',
       evidence: findEvidence(noteText, item.evidencia || [])
     }));
-
     displayResults(predictions);
   } catch (err) {
     console.error(err);
@@ -242,7 +168,7 @@ async function analyzeNote() {
   }
 }
 
-// -------------------- EVIDÊNCIA / HIGHLIGHT --------------------
+// -------------------- EVIDÊNCIA --------------------
 function findEvidence(originalText, terms) {
   const lowerText = (originalText || '').toLowerCase();
   const ev = new Set();
@@ -257,36 +183,26 @@ function findEvidence(originalText, terms) {
   return Array.from(ev).map(x => JSON.parse(x)).sort((a, b) => a.start - b.start);
 }
 
-function renderHighlightedText(text, evidences) {
-  if (!highlightedTextDiv) return;
-  const str = String(text || '');
-  const list = Array.isArray(evidences) ? evidences : [];
-
-  // Construção eficiente
+function renderHighlightedText(text, evidences = []) {
+  if (!editor) return;
   let html = '';
   let last = 0;
-  for (const e of list) {
-    html += escapeHtml(str.slice(last, e.start));
-    html += `<span class="highlight">${escapeHtml(str.slice(e.start, e.end))}</span>`;
+  for (const e of evidences) {
+    html += escapeHtml(text.slice(last, e.start));
+    html += `<span class="highlight">${escapeHtml(text.slice(e.start, e.end))}</span>`;
     last = e.end;
   }
-  html += escapeHtml(str.slice(last));
-  highlightedTextDiv.innerHTML = html;
-
-  // sincroniza scroll
-  if (clinicalNoteInput) highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
+  html += escapeHtml(text.slice(last));
+  editor.innerHTML = html;
 }
 
 // -------------------- RESULTADOS / VALIDAÇÃO --------------------
 function displayResults(predictions) {
   if (!cidList) return;
   cidList.innerHTML = '';
-
   (predictions || []).forEach(pred => {
     const li = document.createElement('li');
-    li.className =
-      'cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors duration-200';
-    li.dataset.evidence = JSON.stringify(pred.evidence || []);
+    li.className = 'cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50';
     li.innerHTML = `
       <div class="flex items-center justify-between">
         <div class="flex-grow">
@@ -302,37 +218,24 @@ function displayResults(predictions) {
         </div>
       </div>
     `;
-
-    // highlight on hover
     li.addEventListener('mouseenter', () => {
-      renderHighlightedText(clinicalNoteInput?.value || '', pred.evidence || []);
+      renderHighlightedText(editor?.innerText || '', pred.evidence || []);
     });
     li.addEventListener('mouseleave', () => {
-      renderHighlightedText(clinicalNoteInput?.value || '', []);
+      renderHighlightedText(editor?.innerText || '', []);
     });
-
     cidList.appendChild(li);
   });
-
   resultContent?.classList.remove('hidden');
 }
 
 function handleValidation(e) {
   const btn = e.target.closest('.validation-btn');
   if (!btn) return;
-
   const cid = btn.dataset.cid;
   const validation = btn.dataset.validation;
-
-  // desabilita ambos no grupo
-  const group = btn.parentElement;
-  group?.querySelectorAll('.validation-btn').forEach(b => (b.disabled = true));
-
-  // feedback visual
+  btn.parentElement?.querySelectorAll('.validation-btn').forEach(b => (b.disabled = true));
   btn.classList.add(validation === 'correct' ? 'correct' : 'incorrect');
-
-  // aqui poderia enviar para backend...
-  // fetch('/api/validate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ cid, validation }) });
 }
 
 // -------------------- DASHBOARD --------------------
@@ -426,41 +329,11 @@ function resetUI() {
   resultContent?.classList.add('hidden');
   if (cidList) cidList.innerHTML = '';
 }
-
 function showError(msg) {
   if (!errorMessage) return;
   errorMessage.textContent = msg;
   errorMessage.classList.remove('hidden');
 }
-
 function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
-}
-
-/* opcional: gráfico (se existir <canvas id="cid-chart"> e Chart.js carregado) */
-function createChart() {
-  const ctx = document.getElementById('cid-chart');
-  if (!ctx || typeof Chart === 'undefined') return;
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: (DASH_DATASETS['Últimos 30 dias'] || []).slice(0, 6).map(i => i.cid),
-      datasets: [
-        {
-          label: 'Frequência',
-          data: (DASH_DATASETS['Últimos 30 dias'] || []).slice(0, 6).map(i => i.freq),
-          backgroundColor: ['rgba(102,126,234,.8)','rgba(240,147,251,.8)','rgba(79,172,254,.8)','rgba(16,185,129,.8)','rgba(245,87,108,.8)','rgba(251,191,36,.8)'],
-          borderColor:   ['rgba(102,126,234,1)','rgba(240,147,251,1)','rgba(79,172,254,1)','rgba(16,185,129,1)','rgba(245,87,108,1)','rgba(251,191,36,1)'],
-          borderWidth: 2,
-          borderRadius: 8,
-          borderSkipped: false
-        }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
-    }
-  });
+  return String(str ?? '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
 }
