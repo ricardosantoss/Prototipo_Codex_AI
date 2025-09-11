@@ -188,6 +188,12 @@ function switchTab(tabName) {
     if (clinicalNoteInput) {
         renderHighlightedText(clinicalNoteInput.value, []);
     }
+    // garante atualização ao entrar no dashboard
+    if (tabName === 'admin') {
+      // já tinha: setAdminSubTab('overview');
+      renderDashboard();
+}
+
 }
 
 // -------------------- UPLOAD DE ARQUIVO --------------------
