@@ -20,14 +20,23 @@
     --shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
+/* SOLUÇÃO PARA TEXTO BORRADO - CHROME WINDOWS */
+
+/* 1. CORREÇÕES GLOBAIS PARA RENDERIZAÇÃO DE FONTE */
 html, body {
-    /* FIX: nitidez tipográfica cross-platform */
+    /* Força renderização de subpixel mais nítida no Chrome/Windows */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    
+    /* NOVO: Força o Chrome a usar renderização de texto mais precisa */
+    font-feature-settings: "kern" 1, "liga" 1;
+    font-variant-ligatures: common-ligatures;
+    
+    /* NOVO: Evita blur por composição de camadas GPU */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
 }
 
 body {
@@ -46,8 +55,8 @@ body {
     box-shadow: var(--shadow-heavy);
     transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
     animation: fadeIn 0.8s ease-out;
-    /* FIX: remover blur real – causa suavização do texto em alguns browsers */
-    backdrop-filter: none;
+    /* NOVO: Remove backdrop-filter que pode causar blur */
+    backdrop-filter: none !important;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -57,8 +66,8 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* Enhanced Main App */
@@ -68,7 +77,7 @@ body {
     box-shadow: var(--shadow-heavy);
     transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
     overflow: hidden;
-    backdrop-filter: none; /* FIX */
+    backdrop-filter: none !important; /* NOVO: Remove backdrop-filter que pode causar blur */
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -92,6 +101,11 @@ body {
     transition: all 0.3s ease;
     border-radius: 8px 8px 0 0;
     overflow: hidden;
+    /* NOVO: Remove transformações que causam blur */
+    transform: none !important;
+    /* NOVO: Força renderização de texto nítida */
+    -webkit-font-smoothing: subpixel-antialiased;
+    text-rendering: geometricPrecision;
 }
 
 .tab-button::before {
@@ -126,7 +140,7 @@ body {
 /* Enhanced Input Styles */
 #clinicalNote {
     opacity: 0; /* deixa invisível, mas ainda editável */
-    caret-color: var(--text-primary);
+    caret-color: #1e293b; /* NOVO: Melhora a renderização do cursor e seleção */
     position: absolute;
     top: 0;
     left: 0;
@@ -136,6 +150,14 @@ body {
     border: none;
     background: transparent;
     z-index: 2;
+    /* NOVO: Força renderização sem antialiasing excessivo */
+    -webkit-font-smoothing: subpixel-antialiased;
+    text-rendering: geometricPrecision;
+    /* NOVO: Evita blur por transformações */
+    transform: none !important;
+    filter: none !important;
+    /* NOVO: Garante que o texto não seja renderizado com blur */
+    font-synthesis: none;
 }
 
 #clinicalNote:focus {
@@ -150,10 +172,22 @@ body {
     background: #f8fafc;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    color: var(--text-primary);
+    color: #0f172a; /* NOVO: Cor mais escura para melhor contraste */
     pointer-events: none;
     overflow-y: auto;
     font-family: 'Inter', sans-serif;
+    /* NOVO: Renderização mais nítida para texto destacado */
+    -webkit-font-smoothing: subpixel-antialiased;
+    text-rendering: geometricPrecision;
+    /* NOVO: Evita blur por composição */
+    transform: none !important;
+    filter: none !important;
+    will-change: auto;
+    /* NOVO: Força pixels exatos sem interpolação */
+    font-synthesis: none;
+    font-variant-numeric: lining-nums;
+    /* NOVO: Evita suavização excessiva no Windows */
+    font-feature-settings: "kern" 1;
 }
 
 /* FIX: remover scale da animação para não “amaciar” glyphs */
@@ -162,9 +196,16 @@ body {
     border-radius: 6px;
     padding: 2px 6px;
     font-weight: 600;
-    color: #1e3a8a;
+    color: #1e3a8a; /* NOVO: Melhora contraste do texto destacado */
     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-    animation: highlightPulse 0.8s ease-out;
+    /* NOVO: Remove animações que podem causar blur */
+    animation: none !important;
+    /* NOVO: Força renderização sem blur */
+    transform: none !important;
+    filter: none !important;
+    /* NOVO: Evita suavização por composição */
+    will-change: auto;
+    backface-visibility: visible;
 }
 @keyframes highlightPulse {
     0%,100% { filter: brightness(100%); }
@@ -179,6 +220,11 @@ body {
     transition: all 0.3s ease;
     position: relative; overflow: hidden;
     box-shadow: var(--shadow-medium);
+    /* NOVO: Remove transformações que causam blur */
+    transform: none !important;
+    /* NOVO: Força renderização de texto nítida */
+    -webkit-font-smoothing: subpixel-antialiased;
+    text-rendering: geometricPrecision;
 }
 
 #analyzeButton::before {
@@ -189,7 +235,12 @@ body {
     transition: left 0.5s ease;
 }
 #analyzeButton:hover::before { left: 100%; }
-#analyzeButton:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4); }
+#analyzeButton:hover {
+    /* NOVO: Usa apenas mudanças de cor/sombra, sem transform */
+    transform: none !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    animation: buttonGlow 2s ease-in-out infinite; /* NOVO: Animação alternativa sem scale para botões */
+}
 
 #analyzeButton:hover svg { animation: search-pulse 1s infinite; }
 @keyframes search-pulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.15);} }
@@ -236,6 +287,11 @@ body {
     font-weight: 500;
     transition: all 0.3s ease;
     position: relative; overflow: hidden;
+    /* NOVO: Remove transformações que causam blur */
+    transform: none !important;
+    /* NOVO: Força renderização de texto nítida */
+    -webkit-font-smoothing: subpixel-antialiased;
+    text-rendering: geometricPrecision;
 }
 .validation-btn::before {
     content: '';
@@ -245,7 +301,11 @@ body {
     transition: left 0.3s ease;
 }
 .validation-btn:hover:not(:disabled)::before { left: 100%; }
-.validation-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-light); }
+.validation-btn:hover:not(:disabled) {
+    /* NOVO: Usa apenas mudanças de cor/sombra, sem transform */
+    transform: none !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
 
 .validation-btn.correct {
     background: linear-gradient(135deg, #dcfce7, #bbf7d0);
@@ -437,8 +497,8 @@ body {
 .fade-in { animation: fadeIn 0.5s ease-out; }
 .slide-up { animation: slideUp 0.5s ease-out; }
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* PDF Modal Styles */
@@ -486,4 +546,69 @@ body {
 .pdf-controls span {
     font-weight: 600; color: var(--text-primary);
     padding: 8px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;
+}
+
+/* 7. CORREÇÃO ESPECÍFICA PARA CHROME WINDOWS */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+    /* Aplica apenas em telas não-retina (comum no Windows) */
+    
+    body, #clinicalNote, #highlighted-text {
+        /* NOVO: Força renderização sem suavização */
+        -webkit-font-smoothing: none;
+        font-smooth: never;
+    }
+    
+    #clinicalNoteContainer {
+        /* NOVO: Evita blur por zoom/escala */
+        zoom: 1;
+        filter: contrast(1.1);
+    }
+}
+
+/* 8. CORREÇÃO PARA TELAS DE ALTA DPI */
+@media screen and (-webkit-min-device-pixel-ratio: 1.25) {
+    #clinicalNote, #highlighted-text {
+        /* NOVO: Em telas de DPI intermediário, usa antialiasing controlado */
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+}
+
+/* 9. FALLBACK PARA NAVEGADORES ANTIGOS */
+@supports not (font-feature-settings: "kern") {
+    #clinicalNote, #highlighted-text {
+        /* NOVO: Fallback para navegadores sem suporte a font-features */
+        text-rendering: auto;
+        -webkit-font-smoothing: auto;
+    }
+}
+
+/* 11. OTIMIZAÇÃO PARA PERFORMANCE E NITIDEZ */
+* {
+    /* NOVO: Evita transformações desnecessárias */
+    will-change: auto;
+    
+    /* NOVO: Força renderização em pixels exatos */
+    box-sizing: border-box;
+}
+
+/* Remove todas as animações que usam transform scale */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* NOVO: Animação alternativa sem scale para botões */
+@keyframes buttonGlow {
+    0%, 100% { box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+    50% { box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); }
+}
+
+#analyzeButton:hover {
+    animation: buttonGlow 2s ease-in-out infinite;
 }
