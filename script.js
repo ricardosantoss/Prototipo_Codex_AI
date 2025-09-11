@@ -14,7 +14,10 @@ const tabs = {
 
 const analysisArea = document.getElementById('analysis-area');
 const textInputArea = document.getElementById('text-input-area');
-const editor = document.getElementById('editor'); // NOVO
+const editor = document.getElementById('editor'); // NOVO (pode não existir)
+const clinicalNoteInput = document.getElementById('clinicalNote'); // LEGADO (pode não existir)
+const highlightedTextDiv = document.getElementById('highlighted-text'); // LEGADO (pode não existir)
+
 const analyzeButton = document.getElementById('analyzeButton');
 const resultsSection = document.getElementById('results');
 const loadingSpinner = document.getElementById('loading');
@@ -39,9 +42,44 @@ const btnExportDashboard = document.getElementById('btn-export-dashboard');
 // -------------------- ESTADO --------------------
 let cidDescriptions = {};
 
-// ====== DADOS FICTÍCIOS P/ DASHBOARD ======
+// ====== DADOS FICTÍCIOS P/ DASHBOARD (preenche de verdade!) ======
 const DASH_MEDICOS = ['Todos os Médicos', 'Dra. Ana', 'Dr. Bruno', 'Dra. Carla'];
-const DASH_DATASETS = { /* ... igual ao seu código ... */ };
+
+const DASH_DATASETS = {
+  'Últimos 7 dias': [
+    { cid: 'S06.0', desc: 'Concussão', freq: 60 },
+    { cid: 'I10', desc: 'Hipertensão essencial', freq: 50 },
+    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 45 },
+    { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 40 },
+    { cid: 'J18.9', desc: 'Pneumonia', freq: 35 },
+    { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 30 },
+    { cid: 'E11', desc: 'Diabetes mellitus tipo 2', freq: 25 },
+    { cid: 'R51', desc: 'Cefaleia', freq: 22 },
+    { cid: 'G40.9', desc: 'Epilepsia', freq: 20 }
+  ],
+  'Últimos 30 dias': [
+    { cid: 'S06.0', desc: 'Concussão', freq: 180 },
+    { cid: 'I10', desc: 'Hipertensão essencial', freq: 150 },
+    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 135 },
+    { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 120 },
+    { cid: 'J18.9', desc: 'Pneumonia', freq: 110 },
+    { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 96 },
+    { cid: 'E11', desc: 'Diabetes mellitus tipo 2', freq: 80 },
+    { cid: 'R51', desc: 'Cefaleia', freq: 70 },
+    { cid: 'G40.9', desc: 'Epilepsia', freq: 61 }
+  ],
+  'Últimos 90 dias': [
+    { cid: 'S06.0', desc: 'Concussão', freq: 520 },
+    { cid: 'I10', desc: 'Hipertensão essencial', freq: 480 },
+    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 440 },
+    { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 420 },
+    { cid: 'J18.9', desc: 'Pneumonia', freq: 395 },
+    { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 360 },
+    { cid: 'E11', desc: 'Diabetes mellitus tipo 2', freq: 330 },
+    { cid: 'R51', desc: 'Cefaleia', freq: 300 },
+    { cid: 'G40.9', desc: 'Epilepsia', freq: 280 }
+  ]
+};
 
 // -------------------- BOOT --------------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -73,12 +111,25 @@ function initializeApp() {
 function setupEventListeners() {
   loginButton?.addEventListener('click', handleLogin);
   logoutButton?.addEventListener('click', handleLogout);
+
   Object.entries(tabs).forEach(([name, btn]) => {
     btn?.addEventListener('click', () => switchTab(name));
   });
+
   analyzeButton?.addEventListener('click', analyzeNote);
   fileUploadInput?.addEventListener('change', handleFileUpload);
   cidList?.addEventListener('click', handleValidation);
+
+  // LEGADO: sincroniza overlay com textarea se existir
+  if (clinicalNoteInput && highlightedTextDiv) {
+    clinicalNoteInput.addEventListener('input', () => {
+      renderHighlightedText(getNoteTextRaw(), []);
+    });
+    clinicalNoteInput.addEventListener('scroll', () => {
+      highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
+    });
+  }
+
   filterMedico?.addEventListener('change', renderDashboard);
   filterPeriodo?.addEventListener('change', renderDashboard);
   btnExportDashboard?.addEventListener('click', exportDashboardCsv);
@@ -101,32 +152,53 @@ function handleLogout(e) {
 function switchTab(tabName) {
   Object.values(tabs).forEach(b => b?.classList.remove('active'));
   tabs[tabName]?.classList.add('active');
+
   analysisArea?.classList.toggle('hidden', tabName === 'admin');
   adminDashboardArea?.classList.toggle('hidden', tabName !== 'admin');
   textInputArea?.classList.toggle('hidden', tabName !== 'text');
   uploadArea?.classList.toggle('hidden', tabName !== 'upload');
+
   resetUI();
-  if (tabName !== 'admin' && editor) {
-    renderHighlightedText(editor.innerText, []);
-  }
+
+  // Re-render do texto (sem highlight) no alvo correto
+  renderHighlightedText(getNoteTextRaw(), []);
+
   if (tabName === 'admin') renderDashboard();
 }
 
 // -------------------- TEXTO DEMO --------------------
 function setupDefaultText() {
-  const demo = 'Lactente com 9 meses ... bronquiolite viral aguda ...';
-  if (editor) editor.innerText = demo;
+  const demo =
+    'Lactente com 9 meses, previamente hígido, iniciou quadro de coriza e tosse seca há 4 dias. ' +
+    'Evoluiu com piora do padrão respiratório, taquipneia, gemência e tiragem subcostal. ' +
+    'Mãe relata febre de 38.5°C e baixa aceitação alimentar. Ao exame: FR 62 irpm, sibilos ' +
+    'expiratórios difusos e SpO₂ 89% em ar ambiente. Hipótese: bronquiolite viral aguda (provável VSR).';
+  setNoteTextRaw(demo);
+}
+
+// -------------------- GET/SET DE TEXTO (HÍBRIDO) --------------------
+function getNoteTextRaw() {
+  // Prioriza editor (novo). Se não existir, usa textarea (legado).
+  if (editor) return editor.innerText || '';
+  if (clinicalNoteInput) return clinicalNoteInput.value || '';
+  return '';
+}
+function setNoteTextRaw(text) {
+  if (editor) editor.innerText = text ?? '';
+  if (clinicalNoteInput) clinicalNoteInput.value = text ?? '';
+  // mantém overlay legado coerente
+  if (highlightedTextDiv) highlightedTextDiv.textContent = text ?? '';
 }
 
 // -------------------- UPLOAD --------------------
 function handleFileUpload(e) {
   const file = e.target.files?.[0];
   if (!file) return;
-  if (fileNameDisplay) fileNameDisplay.textContent = `Arquivo: ${file.name}`;
+  fileNameDisplay && (fileNameDisplay.textContent = `Arquivo: ${file.name}`);
   const reader = new FileReader();
   reader.onload = ev => {
     const txt = ev.target.result || '';
-    if (editor) editor.innerText = txt;
+    setNoteTextRaw(txt);
   };
   reader.readAsText(file);
 }
@@ -134,16 +206,19 @@ function handleFileUpload(e) {
 // -------------------- PREDIÇÃO --------------------
 async function analyzeNote() {
   resetUI();
-  const noteText = editor?.innerText.trim() || '';
+  const noteText = (getNoteTextRaw() || '').trim();
   if (!noteText) return showError('Por favor, insira uma nota clínica.');
+
   resultsSection?.classList.remove('hidden');
   loadingSpinner?.classList.remove('hidden');
+
   try {
     const response = await fetch('/api/predict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clinicalNote: noteText })
     });
+
     if (!response.ok) {
       let msg = `Erro HTTP ${response.status}`;
       try {
@@ -152,12 +227,14 @@ async function analyzeNote() {
       } catch {}
       throw new Error(msg);
     }
+
     const data = await response.json();
     const predictions = (data.cids || []).map(item => ({
       cid: item.cid,
       label: cidDescriptions[(item.cid || '').toUpperCase()] || 'Descrição não encontrada',
       evidence: findEvidence(noteText, item.evidencia || [])
     }));
+
     displayResults(predictions);
   } catch (err) {
     console.error(err);
@@ -168,7 +245,7 @@ async function analyzeNote() {
   }
 }
 
-// -------------------- EVIDÊNCIA --------------------
+// -------------------- EVIDÊNCIA / HIGHLIGHT --------------------
 function findEvidence(originalText, terms) {
   const lowerText = (originalText || '').toLowerCase();
   const ev = new Set();
@@ -177,32 +254,66 @@ function findEvidence(originalText, terms) {
     if (!t.trim()) return;
     let i = -1;
     while ((i = lowerText.indexOf(t, i + 1)) !== -1) {
-      ev.add(JSON.stringify({ start: i, end: i + t.length, text: originalText.slice(i, i + t.length) }));
+      ev.add(JSON.stringify({
+        start: i,
+        end: i + t.length,
+        text: originalText.slice(i, i + t.length)
+      }));
     }
   });
   return Array.from(ev).map(x => JSON.parse(x)).sort((a, b) => a.start - b.start);
 }
 
+/**
+ * Renderiza o texto sem/with highlights.
+ * - Se existir #editor (novo), aplica lá.
+ * - Senão, usa overlay legado (#highlighted-text) e deixa o textarea apenas como fonte.
+ */
 function renderHighlightedText(text, evidences = []) {
-  if (!editor) return;
-  let html = '';
-  let last = 0;
-  for (const e of evidences) {
-    html += escapeHtml(text.slice(last, e.start));
-    html += `<span class="highlight">${escapeHtml(text.slice(e.start, e.end))}</span>`;
-    last = e.end;
+  // NOVO (editor)
+  if (editor) {
+    if (!evidences || evidences.length === 0) {
+      editor.textContent = text || '';
+      return;
+    }
+    let html = '';
+    let last = 0;
+    for (const e of evidences) {
+      html += escapeHtml(String(text).slice(last, e.start));
+      html += `<span class="highlight">${escapeHtml(String(text).slice(e.start, e.end))}</span>`;
+      last = e.end;
+    }
+    html += escapeHtml(String(text).slice(last));
+    editor.innerHTML = html;
+    return;
   }
-  html += escapeHtml(text.slice(last));
-  editor.innerHTML = html;
+
+  // LEGADO (textarea + overlay)
+  if (highlightedTextDiv) {
+    if (!evidences || evidences.length === 0) {
+      highlightedTextDiv.textContent = text || '';
+      return;
+    }
+    let html = '';
+    let last = 0;
+    for (const e of evidences) {
+      html += escapeHtml(String(text).slice(last, e.start));
+      html += `<span class="highlight">${escapeHtml(String(text).slice(e.start, e.end))}</span>`;
+      last = e.end;
+    }
+    html += escapeHtml(String(text).slice(last));
+    highlightedTextDiv.innerHTML = html;
+  }
 }
 
 // -------------------- RESULTADOS / VALIDAÇÃO --------------------
 function displayResults(predictions) {
   if (!cidList) return;
   cidList.innerHTML = '';
+
   (predictions || []).forEach(pred => {
     const li = document.createElement('li');
-    li.className = 'cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50';
+    li.className = 'cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors';
     li.innerHTML = `
       <div class="flex items-center justify-between">
         <div class="flex-grow">
@@ -218,21 +329,24 @@ function displayResults(predictions) {
         </div>
       </div>
     `;
+
+    // Hover -> highlight no alvo correto (editor novo OU overlay legado)
     li.addEventListener('mouseenter', () => {
-      renderHighlightedText(editor?.innerText || '', pred.evidence || []);
+      renderHighlightedText(getNoteTextRaw(), pred.evidence || []);
     });
     li.addEventListener('mouseleave', () => {
-      renderHighlightedText(editor?.innerText || '', []);
+      renderHighlightedText(getNoteTextRaw(), []);
     });
+
     cidList.appendChild(li);
   });
+
   resultContent?.classList.remove('hidden');
 }
 
 function handleValidation(e) {
   const btn = e.target.closest('.validation-btn');
   if (!btn) return;
-  const cid = btn.dataset.cid;
   const validation = btn.dataset.validation;
   btn.parentElement?.querySelectorAll('.validation-btn').forEach(b => (b.disabled = true));
   btn.classList.add(validation === 'correct' ? 'correct' : 'incorrect');
@@ -335,5 +449,7 @@ function showError(msg) {
   errorMessage.classList.remove('hidden');
 }
 function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+  return String(str ?? '').replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[m]);
 }
