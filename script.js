@@ -532,3 +532,133 @@ document.addEventListener('DOMContentLoaded', function() {
         periodFilter.addEventListener('change', updateDashboard);
     }
 });
+
+// ====== DADOS FICTÍCIOS P/ DASHBOARD ======
+const DASH_MEDICOS = ["Todos os Médicos", "Dra. Ana", "Dr. Bruno", "Dra. Carla"];
+const DASH_DATASETS = {
+  "Últimos 7 dias": [
+    { cid: "S06.0", desc: "Concussão", freq: 60 },
+    { cid: "I10",   desc: "Hipertensão essencial", freq: 50 },
+    { cid: "Lupus", desc: "Lúpus Eritematoso Sistêmico", freq: 45 },
+    { cid: "I21.9", desc: "Infarto agudo do miocárdio", freq: 40 },
+    { cid: "J18.9", desc: "Pneumonia", freq: 35 },
+    { cid: "M81.0", desc: "Osteoporose pós-menopausa", freq: 30 },
+    { cid: "E11",   desc: "Diabetes mellitus tipo 2", freq: 25 },
+    { cid: "R51",   desc: "Cefaleia", freq: 22 },
+    { cid: "G40.9", desc: "Epilepsia", freq: 20 }
+  ],
+  "Últimos 30 dias": [
+    { cid: "S06.0", desc: "Concussão", freq: 180 },
+    { cid: "I10",   desc: "Hipertensão essencial", freq: 150 },
+    { cid: "Lupus", desc: "Lúpus Eritematoso Sistêmico", freq: 135 },
+    { cid: "I21.9", desc: "Infarto agudo do miocárdio", freq: 120 },
+    { cid: "J18.9", desc: "Pneumonia", freq: 110 },
+    { cid: "M81.0", desc: "Osteoporose pós-menopausa", freq: 96 },
+    { cid: "E11",   desc: "Diabetes mellitus tipo 2", freq: 80 },
+    { cid: "R51",   desc: "Cefaleia", freq: 70 },
+    { cid: "G40.9", desc: "Epilepsia", freq: 61 }
+  ],
+  "Últimos 90 dias": [
+    { cid: "S06.0", desc: "Concussão", freq: 520 },
+    { cid: "I10",   desc: "Hipertensão essencial", freq: 480 },
+    { cid: "Lupus", desc: "Lúpus Eritematoso Sistêmico", freq: 440 },
+    { cid: "I21.9", desc: "Infarto agudo do miocárdio", freq: 420 },
+    { cid: "J18.9", desc: "Pneumonia", freq: 395 },
+    { cid: "M81.0", desc: "Osteoporose pós-menopausa", freq: 360 },
+    { cid: "E11",   desc: "Diabetes mellitus tipo 2", freq: 330 },
+    { cid: "R51",   desc: "Cefaleia", freq: 300 },
+    { cid: "G40.9", desc: "Epilepsia", freq: 280 }
+  ]
+};
+
+// guarda refs (se já não existirem)
+const adminWelcomeName = document.getElementById('adminWelcomeName');
+const filterMedico = document.getElementById('filterMedico');
+const filterPeriodo = document.getElementById('filterPeriodo');
+const kpiTotal = document.getElementById('kpi-total');
+const kpiUnicos = document.getElementById('kpi-unicos');
+const kpiAcc = document.getElementById('kpi-acc');
+const cidFreqBody = document.getElementById('cidFreqBody');
+const btnExportDashboard = document.getElementById('btn-export-dashboard');
+
+// popular médicos
+function seedMedicos() {
+  if (!filterMedico) return;
+  DASH_MEDICOS.forEach(m => {
+    const opt = document.createElement('option');
+    opt.textContent = m;
+    filterMedico.appendChild(opt);
+  });
+}
+
+// render principal
+function renderDashboard() {
+  const periodo = filterPeriodo ? filterPeriodo.value : 'Últimos 30 dias';
+  const medico = filterMedico ? filterMedico.value : 'Todos os Médicos';
+  const data = (DASH_DATASETS[periodo] || []).slice();
+
+  // simula pequenas variações por médico
+  const factor = medico === "Todos os Médicos" ? 1.0 : 0.9 + Math.random()*0.2;
+  data.forEach(d => d.adj = Math.max(1, Math.round(d.freq * factor)));
+
+  const total = data.reduce((s,d)=>s+d.adj,0);
+  const unicos = data.length;
+  const acc = (92 + Math.random()*6).toFixed(1) + "%";
+
+  kpiTotal.textContent = total;
+  kpiUnicos.textContent = unicos;
+  kpiAcc.textContent = acc;
+
+  // linhas tabela
+  cidFreqBody.innerHTML = data.map(d => {
+    const pct = total ? (d.adj/total*100) : 0;
+    return `
+      <tr class="border-b border-slate-100">
+        <td class="py-3 pr-3 font-medium text-slate-800">${d.cid}</td>
+        <td class="py-3 pr-3 text-slate-700">${escapeHtml(d.desc)}</td>
+        <td class="py-3 pr-3 w-48">
+          <div class="text-slate-600 mb-1">${d.adj}</div>
+          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-2 bg-blue-600" style="width:${pct.toFixed(1)}%"></div>
+          </div>
+        </td>
+        <td class="py-3 pl-3 text-right font-semibold text-slate-800">${pct.toFixed(1)}%</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// export CSV
+if (btnExportDashboard) {
+  btnExportDashboard.addEventListener('click', () => {
+    const periodo = filterPeriodo.value;
+    const medico = filterMedico.value;
+    const rows = [["Período", periodo],["Médico", medico],[],["CID","Descrição","Frequência","% do total"]];
+    // reconstroi a partir do DOM
+    Array.from(cidFreqBody.querySelectorAll('tr')).forEach(tr => {
+      const tds = tr.querySelectorAll('td');
+      const cid  = tds[0].textContent.trim();
+      const desc = tds[1].textContent.trim();
+      const freq = tds[2].querySelector('div').textContent.trim();
+      const pct  = tds[3].textContent.trim();
+      rows.push([cid, desc, freq, pct]);
+    });
+    const csv = rows.map(r => r.map(c => /[",;\n]/.test(c) ? `"${c.replace(/"/g,'""')}"` : c).join(';')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'dashboard_codificacao.csv'; a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+// integra com as abas existentes
+document.addEventListener('DOMContentLoaded', () => {
+  seedMedicos();
+  if (adminWelcomeName && loggedInUser) adminWelcomeName.textContent = loggedInUser.textContent || 'Admin';
+});
+if (filterMedico) filterMedico.addEventListener('change', renderDashboard);
+if (filterPeriodo) filterPeriodo.addEventListener('change', renderDashboard);
+
+// quando abrir a aba Admin, garanta render (chame no seu switchTab ao entrar em 'admin')
+
