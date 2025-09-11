@@ -1,282 +1,344 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Médico - CODEX AI</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Protótipo (Versão Profissional) - Preditor de CID - CODEX.AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+
 </head>
-<body>
-    <!-- Login Screen -->
-    <div id="login-screen" class="flex items-center justify-center min-h-screen py-10">
-        <div class="w-full max-w-sm mx-auto">
-            <div class="login-card bg-white p-8 rounded-2xl shadow-2xl text-center">
-                <img src="codex_ai_logo.png" alt="Logo CODEX.AI" class="mx-auto mb-6 h-20"/>
-                <h2 class="text-2xl font-bold text-gray-800">Acesso à Plataforma</h2>
-                <p class="text-gray-500 mt-2 mb-8">Entre com suas credenciais.</p>
-                <div class="space-y-4">
-                    <input type="text" placeholder="Usuário (ex: admin)" id="username" class="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
-                    <input type="password" placeholder="Senha" id="password" class="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
-                </div>
-                <button id="loginButton" class="mt-8 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/50 transform hover:-translate-y-1">
-                    Entrar
-                </button>
-            </div>
+<body class="flex items-center justify-center min-h-screen py-10">
+
+  <div id="login-screen" class="w-full max-w-sm mx-auto">
+    <div class="login-card bg-white p-8 rounded-2xl shadow-2xl text-center">
+      <img src="codex_ai_logo.png" alt="Logo CODEX.AI" class="mx-auto mb-6 h-20"/>
+      <h2 class="text-2xl font-bold text-text-primary">Acesso à Plataforma</h2>
+      <p class="text-text-secondary mt-2 mb-8">Entre com suas credenciais.</p>
+      <div class="space-y-4">
+        <input type="text" placeholder="Usuário (ex: admin)" id="username" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
+        <input type="password" placeholder="Senha" id="password" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
+      </div>
+      <button id="loginButton" class="mt-8 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/50 transform hover:-translate-y-1">
+        Entrar
+      </button>
+    </div>
+  </div>
+
+  <div id="main-app" class="hidden w-full max-w-4xl mx-auto p-4">
+    <div class="main-card bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center">
+        <div>
+          <img src="codex_ai_logo.png" alt="Logo CODEX.AI" class="h-12"/>
         </div>
-    </div>
-
-    <!-- Main Application -->
-    <div id="main-app" class="hidden min-h-screen bg-gray-50">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo-section">
-                    <i class="fas fa-stethoscope"></i>
-                    <span class="logo-text">CODEX AI</span>
-                </div>
-                <div class="user-section">
-                    <span class="welcome-text">Bem-vindo, <strong id="loggedInUser">Ricardo</strong></span>
-                    <button id="logoutButton" class="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Sair
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navigation Tabs -->
-        <nav class="nav-container">
-            <div class="nav-tabs">
-                <button id="tab-text" class="tab-btn active" data-tab="analysis">
-                    <i class="fas fa-file-medical-alt"></i>
-                    <span>Análise de Nota</span>
-                </button>
-                <button id="tab-upload" class="tab-btn" data-tab="upload">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <span>Upload de Arquivo</span>
-                </button>
-                <button id="tab-admin" class="tab-btn" data-tab="dashboard">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Dashboard Admin</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Analysis Tab -->
-            <div id="analysis-area" class="tab-content active">
-                <div class="content-card">
-                    <div class="card-header">
-                        <h2>Análise de Nota Clínica</h2>
-                        <p>Cole a nota clínica ou faça o upload para receber sugestões de CID-10.</p>
-                    </div>
-                    
-                    <div class="input-area">
-                        <div id="text-input-area">
-                            <div class="input-container">
-                                <div id="highlighted-text" class="highlighted-overlay"></div>
-                                <textarea id="clinicalNote" rows="12" placeholder="Cole a nota clínica aqui..."></textarea>
-                            </div>
-                        </div>
-                        
-                        <div id="upload-area" class="hidden">
-                            <div class="upload-zone" id="upload-zone">
-                                <div class="upload-content">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <h3>Arraste e solte seu arquivo aqui</h3>
-                                    <p>ou clique para selecionar</p>
-                                    <input type="file" id="file-upload" accept=".txt,.pdf" hidden>
-                                    <div class="file-types">
-                                        <span>Suporta: TXT, PDF</span>
-                                    </div>
-                                </div>
-                                <div id="file-info" class="file-info hidden">
-                                    <i class="fas fa-file-alt"></i>
-                                    <span id="fileName"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="action-section">
-                        <button id="analyzeButton" class="analyze-btn">
-                            <i class="fas fa-search"></i>
-                            <span>Sugerir Códigos CID</span>
-                        </button>
-                    </div>
-
-                    <!-- Results Section -->
-                    <div id="results" class="results-section hidden">
-                        <div id="loading" class="loading-container hidden">
-                            <div class="loader"></div>
-                            <p>Analisando nota clínica...</p>
-                        </div>
-
-                        <div id="result-content" class="result-content hidden">
-                            <div class="result-header">
-                                <h3>Sugestões de CID-10</h3>
-                                <p>Passe o mouse sobre uma sugestão para destacar a evidência no texto.</p>
-                            </div>
-                            <ul id="cid-list" class="cid-suggestions"></ul>
-                        </div>
-                    </div>
-
-                    <div id="error-message" class="error-message hidden"></div>
-                </div>
-            </div>
-
-            <!-- Upload Tab -->
-            <div id="upload-tab" class="tab-content">
-                <div class="content-card">
-                    <div class="card-header">
-                        <h2>Upload de Arquivos</h2>
-                        <p>Faça upload de múltiplos arquivos para análise em lote.</p>
-                    </div>
-                    
-                    <div class="bulk-upload-area">
-                        <div class="upload-zone" id="bulk-upload-zone">
-                            <div class="upload-content">
-                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                <h3>Arraste múltiplos arquivos aqui</h3>
-                                <p>ou clique para selecionar vários arquivos</p>
-                                <input type="file" id="bulk-upload" accept=".txt,.pdf" multiple hidden>
-                                <div class="file-types">
-                                    <span>Suporta: TXT, PDF (máx. 10MB cada)</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="uploaded-files" class="uploaded-files"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dashboard Tab -->
-            <div id="admin-dashboard-area" class="tab-content">
-                <div class="dashboard-container">
-                    <div class="dashboard-header">
-                        <h2>Dashboard do Administrador</h2>
-                        <p>Análise de performance e frequência de codificação.</p>
-                    </div>
-
-                    <!-- Filters -->
-                    <div class="filters-section">
-                        <div class="filter-group">
-                            <label for="doctor-filter">Filtrar por Médico</label>
-                            <select id="doctor-filter">
-                                <option value="all">Todos os Médicos</option>
-                                <option value="dr-silva">Dr. Silva</option>
-                                <option value="dra-santos">Dra. Santos</option>
-                                <option value="dr-oliveira">Dr. Oliveira</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="period-filter">Filtrar por Período</label>
-                            <select id="period-filter">
-                                <option value="30">Últimos 30 dias</option>
-                                <option value="60">Últimos 60 dias</option>
-                                <option value="90">Últimos 90 dias</option>
-                                <option value="365">Último ano</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Metrics -->
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-icon primary">
-                                <i class="fas fa-user-md"></i>
-                            </div>
-                            <div class="metric-content">
-                                <div class="metric-value" id="total-appointments">327</div>
-                                <div class="metric-label">Total de Atendimentos</div>
-                            </div>
-                        </div>
-                        
-                        <div class="metric-card">
-                            <div class="metric-icon secondary">
-                                <i class="fas fa-code"></i>
-                            </div>
-                            <div class="metric-content">
-                                <div class="metric-value" id="unique-cids">9</div>
-                                <div class="metric-label">CIDs Únicos Codificados</div>
-                            </div>
-                        </div>
-                        
-                        <div class="metric-card">
-                            <div class="metric-icon success">
-                                <i class="fas fa-bullseye"></i>
-                            </div>
-                            <div class="metric-content">
-                                <div class="metric-value" id="ai-accuracy">94.7%</div>
-                                <div class="metric-label">Precisão Média da IA</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Chart -->
-                    <div class="chart-container">
-                        <h3>Frequência de CIDs</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="cid-chart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Table -->
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>CID</th>
-                                    <th>Descrição</th>
-                                    <th>Frequência</th>
-                                    <th>% do Total</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cid-table-body">
-                                <!-- Populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- PDF Modal -->
-    <div id="pdf-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Visualização de PDF</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <canvas id="pdf-canvas"></canvas>
-                <div class="pdf-controls">
-                    <button id="prev-page">
-                        <i class="fas fa-chevron-left"></i>
-                        Anterior
-                    </button>
-                    <span id="page-info">Página 1 de 1</span>
-                    <button id="next-page">
-                        Próxima
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="text-right">
+          <p class="text-sm">Bem-vindo, <span id="loggedInUser" class="font-bold">Admin</span></p>
+          <a href="#" id="logoutButton" class="text-xs text-blue-200 hover:text-white transition-colors">Sair</a>
         </div>
-    </div>
+      </div>
 
-    <!-- Scripts -->
-    <script src="pdf-handler.js"></script>
-    <script src="script.js"></script>
+      <div class="p-8">
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button id="tab-text" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Análise de Nota</button>
+            <button id="tab-upload" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Upload de Arquivo</button>
+            <button id="tab-admin" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Dashboard Admin</button>
+          </nav>
+        </div>
+
+        <div id="analysis-area">
+          <h2 class="text-2xl font-semibold text-text-primary mt-8">Análise de Nota Clínica</h2>
+          <p class="text-text-secondary mt-1">Cole a nota clínica ou faça o upload para receber sugestões de CID-10.</p>
+          <div class="mt-6">
+            <div id="text-input-area">
+              <div id="clinicalNoteContainer" class="relative">
+                <div id="highlighted-text" class="mt-1 block w-full p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent leading-relaxed" style="min-height: 220px;"></div>
+                <textarea id="clinicalNote" rows="9" class="absolute top-0 left-0 mt-1 block w-full p-4 bg-transparent border-none rounded-lg shadow-sm focus:outline-none leading-relaxed" placeholder="Cole a nota clínica aqui..."></textarea>
+              </div>
+            </div>
+            <div id="upload-area" class="hidden">
+                <label for="file-upload" class="mt-1 flex justify-center w-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-indigo-50 transition">
+                  <div class="space-y-1 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="flex text-sm text-gray-600">
+                      <p class="pl-1">Clique para selecionar ou arraste o arquivo (.txt)</p>
+                      <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".txt"/>
+                    </div>
+                    <p id="fileName" class="text-center mt-2 text-sm font-medium text-indigo-600"></p>
+                  </div>
+                </label>
+            </div>
+          </div>
+          <div class="mt-8">
+            <button id="analyzeButton" class="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 shadow-xl hover:shadow-blue-500/40">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 transition-transform" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+              Sugerir Códigos CID
+            </button>
+          </div>
+        </div>
+
+        <div id="admin-dashboard-area" class="hidden mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800">Dashboard do Administrador</h2>
+            <p class="text-gray-500 mt-1">Área em desenvolvimento.</p>
+        </div>
+
+        <div id="results" class="hidden mt-8">
+          <div id="loading" class="hidden flex justify-center items-center p-6">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+            <p class="ml-4 text-gray-600">Analisando nota clínica...</p>
+          </div>
+          <div id="result-content" class="hidden">
+            <h3 class="text-xl font-semibold text-text-primary border-b pb-3">Sugestões de CID-10</h3>
+            <p class="text-sm text-text-secondary mt-2">Passe o mouse sobre uma sugestão para destacar a evidência no texto. Valide o resultado.</p>
+            <ul id="cid-list" class="mt-4 space-y-3"></ul>
+          </div>
+        </div>
+        <div id="error-message" class="hidden mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -------------------- ELEMENTOS --------------------
+    const loginScreen = document.getElementById('login-screen');
+    const mainApp = document.getElementById('main-app');
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const usernameInput = document.getElementById('username');
+    const loggedInUser = document.getElementById('loggedInUser');
+    const tabs = { text: document.getElementById('tab-text'), upload: document.getElementById('tab-upload'), admin: document.getElementById('tab-admin') };
+    const analysisArea = document.getElementById('analysis-area');
+    const textInputArea = document.getElementById('text-input-area');
+    const clinicalNoteInput = document.getElementById('clinicalNote');
+    const highlightedTextDiv = document.getElementById('highlighted-text');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const resultsSection = document.getElementById('results');
+    const loadingSpinner = document.getElementById('loading');
+    const resultContent = document.getElementById('result-content');
+    const cidList = document.getElementById('cid-list');
+    const errorMessage = document.getElementById('error-message');
+    const fileUploadInput = document.getElementById('file-upload');
+    const fileNameDisplay = document.getElementById('fileName');
+    const uploadArea = document.getElementById('upload-area'); // Variável restaurada
+    const adminDashboardArea = document.getElementById('admin-dashboard-area'); // Variável restaurada
+    let cidDescriptions = {};
+
+    // -------------------- CARREGAR DESCRIÇÕES CID --------------------
+    async function loadCidDescriptions() {
+        try {
+            const response = await fetch('./cids.json');
+            if (!response.ok) throw new Error('Não foi possível carregar cids.json');
+            cidDescriptions = await response.json();
+            console.log('Descrições de CID carregadas!');
+        } catch (error) {
+            console.error(error);
+            errorMessage.textContent = "Erro ao carregar dados essenciais (cids.json).";
+            errorMessage.classList.remove('hidden');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', loadCidDescriptions);
+
+    // -------------------- TEXTO DEMO E SINCRONIZAÇÃO --------------------
+    const defaultClinicalNote = "Lactente com 9 meses, previamente hígido, iniciou quadro de coriza e tosse seca há 4 dias. Evoluiu com piora do padrão respiratório, taquipneia, gemência e tiragem subcostal. Mãe relata febre de 38.5°C e baixa aceitação alimentar. Ao exame: FR de 62 irpm, sibilos expiratórios difusos e saturação de O2 de 89% em ar ambiente. Hipótese de bronquiolite viral aguda, provável VSR. Internado para oxigenoterapia e hidratação venosa.";
+    clinicalNoteInput.value = defaultClinicalNote;
+    highlightedTextDiv.textContent = defaultClinicalNote;
+
+    clinicalNoteInput.addEventListener('input', () => renderHighlightedText(clinicalNoteInput.value, []));
+    clinicalNoteInput.addEventListener('scroll', () => highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop);
+
+    // -------------------- LÓGICA DE UPLOAD --------------------
+    fileUploadInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            fileNameDisplay.textContent = `Arquivo: ${file.name}`;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                clinicalNoteInput.value = e.target.result;
+                highlightedTextDiv.textContent = e.target.result;
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // -------------------- AUTENTICAÇÃO E ABAS (LÓGICA CORRIGIDA) --------------------
+    loginButton.addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      if (username) {
+        loggedInUser.textContent = username;
+        loginScreen.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+        switchTab('text');
+      }
+    });
+
+    logoutButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      mainApp.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+    });
+
+    Object.entries(tabs).forEach(([tabName, tabBtn]) => {
+      tabBtn.addEventListener('click', () => switchTab(tabName));
+    });
+
+    function switchTab(tabName) {
+        Object.values(tabs).forEach(btn => btn.classList.remove('active'));
+        tabs[tabName].classList.add('active');
+
+        analysisArea.classList.toggle('hidden', tabName === 'admin');
+        adminDashboardArea.classList.toggle('hidden', tabName !== 'admin');
+        
+        textInputArea.classList.toggle('hidden', tabName !== 'text');
+        uploadArea.classList.toggle('hidden', tabName !== 'upload');
+
+        resetUI();
+        renderHighlightedText(clinicalNoteInput.value, []);
+    }
+
+    // -------------------- CHAMADA À API --------------------
+    analyzeButton.addEventListener('click', async () => {
+      resetUI();
+      const noteText = clinicalNoteInput.value;
+      if (noteText.trim() === '') {
+        errorMessage.textContent = "Por favor, insira uma nota clínica.";
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+      resultsSection.classList.remove('hidden');
+      loadingSpinner.classList.remove('hidden');
+
+      try {
+        const response = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clinicalNote: noteText }),
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.details || err.error || `Erro HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        const predictions = data.cids.map(item => ({
+            cid: item.cid,
+            label: cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada`,
+            evidence: findEvidence(noteText, item.evidencia || []),
+        }));
+        displayResults(predictions);
+      } catch (error) {
+        console.error('Erro ao analisar:', error);
+        errorMessage.textContent = `Erro: ${error.message}`;
+        errorMessage.classList.remove('hidden');
+      } finally {
+        loadingSpinner.classList.add('hidden');
+        resultContent.classList.remove('hidden');
+      }
+    });
+    
+    // -------------------- LÓGICA DE EVIDÊNCIA E DESTAQUE --------------------
+    function findEvidence(originalText, terms) {
+        const lowerText = originalText.toLowerCase();
+        const ev = new Set();
+        terms.forEach(term => {
+            const lowerTerm = term.toLowerCase();
+            if (lowerTerm.trim() === '') return;
+            let i = -1;
+            while ((i = lowerText.indexOf(lowerTerm, i + 1)) !== -1) {
+                ev.add(JSON.stringify({
+                    start: i, end: i + lowerTerm.length,
+                    text: originalText.slice(i, i + lowerTerm.length)
+                }));
+            }
+        });
+        return Array.from(ev).map(e => JSON.parse(e)).sort((a,b) => a.start - b.start);
+    }
+
+    function renderHighlightedText(originalText, evidenceList) {
+      if (!evidenceList || evidenceList.length === 0) {
+        highlightedTextDiv.innerHTML = escapeHtml(originalText);
+        return;
+      }
+      let html = '';
+      let cursor = 0;
+      evidenceList.forEach(ev => {
+        html += escapeHtml(originalText.slice(cursor, ev.start));
+        html += `<span class="highlight">${escapeHtml(ev.text)}</span>`;
+        cursor = ev.end;
+      });
+      html += escapeHtml(originalText.slice(cursor));
+      highlightedTextDiv.innerHTML = html;
+    }
+
+    // -------------------- EXIBIR RESULTADOS (COM VALIDAÇÃO) --------------------
+    function displayResults(predictions) {
+        cidList.innerHTML = '';
+        predictions.forEach((pred) => {
+            const li = document.createElement('li');
+            li.className = "cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors duration-200";
+            li.dataset.evidence = JSON.stringify(pred.evidence);
+            li.innerHTML = `
+              <div class="flex items-center justify-between">
+                <div class="flex-grow">
+                  <p class="font-semibold text-gray-900">${pred.cid} — ${escapeHtml(pred.label)}</p>
+                  <div class="text-xs text-gray-500 mt-2">
+                    <span class="font-medium">Evidências:</span>
+                    ${pred.evidence.map(e => `<span class="italic">"${escapeHtml(e.text)}"</span>`).join(' • ')}
+                  </div>
+                </div>
+                <div class="flex-shrink-0 ml-4 flex items-center space-x-2">
+                    <button class="validation-btn p-2 rounded-full" data-action="correct" data-cid="${pred.cid}" title="Correto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></button>
+                    <button class="validation-btn p-2 rounded-full" data-action="incorrect" data-cid="${pred.cid}" title="Incorreto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg></button>
+                </div>
+              </div>`;
+            cidList.appendChild(li);
+        });
+        
+        cidList.querySelectorAll('.cid-item').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                const evidence = JSON.parse(item.dataset.evidence);
+                renderHighlightedText(clinicalNoteInput.value, evidence);
+            });
+            item.addEventListener('mouseleave', () => renderHighlightedText(clinicalNoteInput.value, []));
+        });
+
+        cidList.querySelectorAll('.validation-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const currentButton = e.currentTarget;
+                const { action, cid } = currentButton.dataset;
+                const parent = currentButton.parentElement;
+                const correctBtn = parent.querySelector('[data-action="correct"]');
+                const incorrectBtn = parent.querySelector('[data-action="incorrect"]');
+
+                correctBtn.classList.remove('correct'); incorrectBtn.classList.remove('incorrect');
+                correctBtn.disabled = false; incorrectBtn.disabled = false;
+
+                if (action === 'correct') {
+                    correctBtn.classList.add('correct'); incorrectBtn.disabled = true;
+                } else {
+                    incorrectBtn.classList.add('incorrect'); correctBtn.disabled = true;
+                }
+                console.log(`Feedback: CID ${cid} foi marcado como ${action}.`);
+            });
+        });
+    }
+
+    // -------------------- UTILITÁRIOS UI --------------------
+    function resetUI() {
+      errorMessage.classList.add('hidden');
+      resultsSection.classList.add('hidden');
+      cidList.innerHTML = '';
+      loadingSpinner.classList.add('hidden');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m]);
+    }
+  </script>
 </body>
 </html>
