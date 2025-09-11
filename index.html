@@ -7,16 +7,26 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; background:#f8fafc;}
+    .tab-button.active { border-color:rgb(37,99,235) !important; color:rgb(29,78,216) !important; }
+    .highlight { background:#fde68a; border-radius:.25rem; padding:0 .15rem; }
+    .validation-btn.correct { background:#dcfce7; }
+    .validation-btn.incorrect { background:#fee2e2; }
+    .login-card, .main-card { backdrop-filter: saturate(1.05); }
+    .loader { border-top-color:#3b82f6; border-radius:50%; width:3rem; height:3rem; border-width:4px; animation: spin 1s linear infinite;}
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body class="flex items-center justify-center min-h-screen py-10">
 
+  <!-- LOGIN -->
   <div id="login-screen" class="w-full max-w-sm mx-auto">
     <div class="login-card bg-white p-8 rounded-2xl shadow-2xl text-center">
       <img src="codex_ai_logo.png" alt="Logo CODEX.AI" class="mx-auto mb-6 h-20"/>
-      <h2 class="text-2xl font-bold text-text-primary">Acesso à Plataforma</h2>
-      <p class="text-text-secondary mt-2 mb-8">Entre com suas credenciais.</p>
+      <h2 class="text-2xl font-bold text-slate-900">Acesso à Plataforma</h2>
+      <p class="text-slate-500 mt-2 mb-8">Entre com suas credenciais.</p>
       <div class="space-y-4">
         <input type="text" placeholder="Usuário (ex: admin)" id="username" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
         <input type="password" placeholder="Senha" id="password" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"/>
@@ -27,11 +37,17 @@
     </div>
   </div>
 
-  <div id="main-app" class="hidden w-full max-w-4xl mx-auto p-4">
+  <!-- APP -->
+  <div id="main-app" class="hidden w-full max-w-5xl mx-auto p-4">
     <div class="main-card bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <!-- Header -->
       <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center">
-        <div>
+        <div class="flex items-center gap-3">
           <img src="codex_ai_logo.png" alt="Logo CODEX.AI" class="h-12"/>
+          <div class="hidden sm:block">
+            <p class="text-blue-100 text-sm">Preditor de CID</p>
+            <h1 class="text-xl font-semibold">CODEX.AI</h1>
+          </div>
         </div>
         <div class="text-right">
           <p class="text-sm">Bem-vindo, <span id="loggedInUser" class="font-bold">Admin</span></p>
@@ -39,149 +55,174 @@
         </div>
       </div>
 
-      <div class="p-8">
-        <div class="border-b border-gray-200">
-          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-            <button id="tab-text" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Análise de Nota</button>
-            <button id="tab-upload" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Upload de Arquivo</button>
-            <button id="tab-admin" class="tab-button whitespace-nowrap pb-4 px-1 border-b-2 font-semibold text-sm border-transparent">Dashboard Admin</button>
-          </nav>
-        </div>
+      <!-- Tabs -->
+      <div class="px-6 pt-6 border-b border-gray-200">
+        <nav class="-mb-px flex flex-wrap gap-6" aria-label="Tabs">
+          <button id="tab-text"   class="tab-button pb-4 px-1 border-b-2 font-semibold text-sm border-transparent text-slate-700">Análise de Nota</button>
+          <button id="tab-upload" class="tab-button pb-4 px-1 border-b-2 font-semibold text-sm border-transparent text-slate-700">Upload de Arquivo</button>
+          <button id="tab-admin"  class="tab-button pb-4 px-1 border-b-2 font-semibold text-sm border-transparent text-slate-700">Dashboard Admin</button>
+        </nav>
+      </div>
 
+      <!-- Conteúdo -->
+      <div class="p-6">
+
+        <!-- Análise de Nota -->
         <div id="analysis-area">
-          <h2 class="text-2xl font-semibold text-text-primary mt-8">Análise de Nota Clínica</h2>
-          <p class="text-text-secondary mt-1">Cole a nota clínica ou faça o upload para receber sugestões de CID-10.</p>
+          <h2 class="text-2xl font-semibold text-slate-900">Análise de Nota Clínica</h2>
+          <p class="text-slate-500 mt-1">Cole a nota clínica ou faça o upload para receber sugestões de CID-10.</p>
+
           <div class="mt-6">
             <div id="text-input-area">
               <div id="clinicalNoteContainer" class="relative">
-                <div id="highlighted-text" class="mt-1 block w-full p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent leading-relaxed" style="min-height: 220px;"></div>
-                <textarea id="clinicalNote" rows="9" class="absolute top-0 left-0 mt-1 block w-full p-4 bg-transparent border-none rounded-lg shadow-sm focus:outline-none leading-relaxed" placeholder="Cole a nota clínica aqui..."></textarea>
+                <div id="highlighted-text" class="mt-1 block w-full p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:outline-none leading-relaxed" style="min-height: 220px;"></div>
+                <textarea id="clinicalNote" rows="9" class="absolute top-0 left-0 mt-1 block w-full p-4 bg-transparent border-none rounded-lg focus:outline-none leading-relaxed" placeholder="Cole a nota clínica aqui..."></textarea>
               </div>
             </div>
+
             <div id="upload-area" class="hidden">
-                <label for="file-upload" class="mt-1 flex justify-center w-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-indigo-50 transition">
-                  <div class="space-y-1 text-center">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <div class="flex text-sm text-gray-600">
-                      <p class="pl-1">Clique para selecionar ou arraste o arquivo (.txt)</p>
-                      <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".txt"/>
-                    </div>
-                    <p id="fileName" class="text-center mt-2 text-sm font-medium text-indigo-600"></p>
+              <label for="file-upload" class="mt-1 flex justify-center w-full px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-indigo-50 transition">
+                <div class="space-y-1 text-center">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div class="flex text-sm text-gray-600 justify-center gap-2">
+                    <p>Clique para selecionar ou arraste o arquivo</p><span class="font-medium">(.txt)</span>
                   </div>
-                </label>
+                  <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".txt"/>
+                  <p id="fileName" class="text-center mt-2 text-sm font-medium text-indigo-600"></p>
+                </div>
+              </label>
             </div>
           </div>
+
           <div class="mt-8">
             <button id="analyzeButton" class="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 shadow-xl hover:shadow-blue-500/40">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 transition-transform" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
               Sugerir Códigos CID
             </button>
           </div>
         </div>
 
-        <!-- DASHBOARD ADMIN -->
+        <!-- Dashboard Admin (bonito) -->
         <div id="admin-dashboard-area" class="hidden mt-8">
-          <h2 class="text-2xl font-semibold text-gray-800">Dashboard do Administrador</h2>
-          <p class="text-gray-500 mt-1">Acompanhe métricas gerais e relatórios (dados fictícios).</p>
-
-          <!-- Sub-abas do admin -->
-          <div class="mt-4 border-b border-gray-200">
-            <nav class="-mb-px flex space-x-6" aria-label="Admin Tabs">
-              <button id="admin-tab-overview" class="admin-tab-button whitespace-nowrap pb-3 px-1 border-b-2 font-semibold text-sm border-blue-600 text-blue-700">Visão Geral</button>
-              <button id="admin-tab-fake" class="admin-tab-button whitespace-nowrap pb-3 px-1 border-b-2 font-semibold text-sm border-transparent text-gray-600 hover:text-gray-800">Relatórios (Fictício)</button>
-            </nav>
+          <!-- Header gradiente -->
+          <div class="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 flex items-center justify-between shadow-xl">
+            <div class="space-y-1">
+              <h2 class="text-2xl font-semibold">Dashboard do Administrador</h2>
+              <p class="text-blue-100">Análise de performance e frequência de codificação.</p>
+            </div>
+            <div class="text-right">
+              <span class="text-sm text-blue-100">Bem-vindo,</span>
+              <p class="font-bold -mt-0.5" id="adminWelcomeName">Ricardo</p>
+            </div>
           </div>
 
-          <!-- Conteúdo: Visão Geral -->
-          <div id="admin-overview" class="mt-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50">
-                <p class="text-sm text-slate-600">Notas analisadas (últimos 7 dias)</p>
-                <p id="kpi-notes" class="mt-2 text-3xl font-bold text-slate-900">—</p>
-              </div>
-              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50">
-                <p class="text-sm text-slate-600">Taxa de validação clínica</p>
-                <p id="kpi-validation" class="mt-2 text-3xl font-bold text-slate-900">—</p>
-              </div>
-              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50">
-                <p class="text-sm text-slate-600">CIDs diferentes sugeridos</p>
-                <p id="kpi-unique" class="mt-2 text-3xl font-bold text-slate-900">—</p>
+          <!-- Filtros -->
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <label class="block text-sm text-slate-600 mb-1">Filtrar por Médico</label>
+              <div class="relative">
+                <select id="filterMedico"
+                  class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg py-2.5 px-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>Todos os Médicos</option>
+                </select>
+                <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">▾</span>
               </div>
             </div>
-            <p class="text-xs text-slate-400 mt-3">*Valores demonstrativos.</p>
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <label class="block text-sm text-slate-600 mb-1">Filtrar por Período</label>
+              <div class="relative">
+                <select id="filterPeriodo"
+                  class="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg py-2.5 px-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>Últimos 7 dias</option>
+                  <option selected>Últimos 30 dias</option>
+                  <option>Últimos 90 dias</option>
+                </select>
+                <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">▾</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Conteúdo: Relatórios Fictícios -->
-          <div id="admin-fake" class="hidden mt-6">
+          <!-- KPIs -->
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <p class="text-sm text-slate-500">Total de Atendimentos</p>
+              <p id="kpi-total" class="mt-1 text-3xl font-bold text-slate-900">—</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <p class="text-sm text-slate-500">CIDs Únicos Codificados</p>
+              <p id="kpi-unicos" class="mt-1 text-3xl font-bold text-slate-900">—</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <p class="text-sm text-slate-500">Precisão Média da IA</p>
+              <p class="mt-1 text-3xl font-extrabold">
+                <span id="kpi-acc" class="px-2.5 py-1 rounded-lg bg-green-100 text-green-700">—</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Tabela de Frequência -->
+          <div class="mt-6 bg-white rounded-2xl border border-slate-200 p-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-xl font-semibold text-gray-800">Relatórios (Dados Fictícios)</h3>
-              <button id="btn-export" class="bg-indigo-600 text-white text-sm font-semibold py-2 px-3 rounded-lg hover:bg-indigo-700">Exportar CSV</button>
+              <h3 class="text-xl font-semibold text-slate-900">Frequência de CIDs</h3>
+              <button id="btn-export-dashboard"
+                class="text-sm bg-indigo-600 text-white font-semibold py-2 px-3 rounded-lg hover:bg-indigo-700">
+                Exportar CSV
+              </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div class="p-4 rounded-xl border border-slate-200">
-                <p class="text-sm text-slate-600">Tempo médio por nota</p>
-                <p id="fake-avg-time" class="mt-1 text-2xl font-bold text-slate-900">—</p>
-              </div>
-              <div class="p-4 rounded-xl border border-slate-200">
-                <p class="text-sm text-slate-600">Precisão (amostra)</p>
-                <p id="fake-precision" class="mt-1 text-2xl font-bold text-slate-900">—</p>
-              </div>
-              <div class="p-4 rounded-xl border border-slate-200">
-                <p class="text-sm text-slate-600">Top CIDs sugeridos</p>
-                <p id="fake-top-cids" class="mt-1 text-2xl font-bold text-slate-900">—</p>
-              </div>
-            </div>
-
-            <div class="overflow-x-auto border border-slate-200 rounded-xl">
-              <table class="min-w-full divide-y divide-slate-200">
-                <thead class="bg-slate-50">
-                  <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Data</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Usuário</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Notas</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">CIDs Sugeridos</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Validações</th>
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead class="text-xs uppercase text-slate-500">
+                  <tr class="border-b border-slate-200">
+                    <th class="py-2 pr-3 text-left">CID</th>
+                    <th class="py-2 pr-3 text-left">Descrição</th>
+                    <th class="py-2 pr-3 w-48 text-left">Frequência</th>
+                    <th class="py-2 pl-3 text-right">% do total</th>
                   </tr>
                 </thead>
-                <tbody id="fake-table" class="bg-white divide-y divide-slate-100">
-                  <!-- linhas geradas via JS -->
+                <tbody id="cidFreqBody" class="text-sm">
+                  <!-- linhas via JS -->
                 </tbody>
               </table>
             </div>
-            <p class="text-xs text-slate-400 mt-3">*Puramente ilustrativo.</p>
+            <p class="text-xs text-slate-400 mt-3">*Dados demonstrativos.</p>
           </div>
         </div>
 
+        <!-- Resultados da análise -->
         <div id="results" class="hidden mt-8">
           <div id="loading" class="hidden flex justify-center items-center p-6">
-            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+            <div class="loader"></div>
             <p class="ml-4 text-gray-600">Analisando nota clínica...</p>
           </div>
           <div id="result-content" class="hidden">
-            <h3 class="text-xl font-semibold text-text-primary border-b pb-3">Sugestões de CID-10</h3>
-            <p class="text-sm text-text-secondary mt-2">Passe o mouse sobre uma sugestão para destacar a evidência no texto. Valide o resultado.</p>
+            <h3 class="text-xl font-semibold text-slate-900 border-b pb-3">Sugestões de CID-10</h3>
+            <p class="text-sm text-slate-500 mt-2">Passe o mouse sobre uma sugestão para destacar a evidência no texto. Valide o resultado.</p>
             <ul id="cid-list" class="mt-4 space-y-3"></ul>
           </div>
         </div>
+
         <div id="error-message" class="hidden mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg"></div>
       </div>
     </div>
   </div>
 
   <script>
-    // -------------------- ELEMENTOS --------------------
+    // -------------------- ELEMENTOS BÁSICOS --------------------
     const loginScreen = document.getElementById('login-screen');
     const mainApp = document.getElementById('main-app');
     const loginButton = document.getElementById('loginButton');
     const logoutButton = document.getElementById('logoutButton');
     const usernameInput = document.getElementById('username');
     const loggedInUser = document.getElementById('loggedInUser');
-    const tabs = { text: document.getElementById('tab-text'), upload: document.getElementById('tab-upload'), admin: document.getElementById('tab-admin') };
+    const tabs = {
+      text:   document.getElementById('tab-text'),
+      upload: document.getElementById('tab-upload'),
+      admin:  document.getElementById('tab-admin')
+    };
     const analysisArea = document.getElementById('analysis-area');
-    const textInputArea = document.getElementById('text-input-area');
     const clinicalNoteInput = document.getElementById('clinicalNote');
     const highlightedTextDiv = document.getElementById('highlighted-text');
     const analyzeButton = document.getElementById('analyzeButton');
@@ -192,71 +233,83 @@
     const errorMessage = document.getElementById('error-message');
     const fileUploadInput = document.getElementById('file-upload');
     const fileNameDisplay = document.getElementById('fileName');
+    const textInputArea = document.getElementById('text-input-area');
     const uploadArea = document.getElementById('upload-area');
     const adminDashboardArea = document.getElementById('admin-dashboard-area');
 
-    // Admin sub-tabs
-    const adminTabOverview = document.getElementById('admin-tab-overview');
-    const adminTabFake = document.getElementById('admin-tab-fake');
-    const adminOverview = document.getElementById('admin-overview');
-    const adminFake = document.getElementById('admin-fake');
+    // -------------------- DASHBOARD ELEMENTS --------------------
+    const adminWelcomeName = document.getElementById('adminWelcomeName');
+    const filterMedico = document.getElementById('filterMedico');
+    const filterPeriodo = document.getElementById('filterPeriodo');
+    const kpiTotal = document.getElementById('kpi-total');
+    const kpiUnicos = document.getElementById('kpi-unicos');
+    const kpiAcc = document.getElementById('kpi-acc');
+    const cidFreqBody = document.getElementById('cidFreqBody');
+    const btnExportDashboard = document.getElementById('btn-export-dashboard');
 
-    // KPIs fictícios
-    const kpiNotes = document.getElementById('kpi-notes');
-    const kpiValidation = document.getElementById('kpi-validation');
-    const kpiUnique = document.getElementById('kpi-unique');
+    // -------------------- DADOS FICTÍCIOS P/ DASHBOARD --------------------
+    const DASH_MEDICOS = ["Todos os Médicos", "Dra. Ana", "Dr. Bruno", "Dra. Carla"];
+    const DASH_DATASETS = {
+      "Últimos 7 dias": [
+        { cid: "S06.0", desc: "Concussão", freq: 60 },
+        { cid: "I10",   desc: "Hipertensão essencial", freq: 50 },
+        { cid: "Lupus", desc: "Lúpus Eritematoso Sistêmico", freq: 45 },
+        { cid: "I21.9", desc: "Infarto agudo do miocárdio", freq: 40 },
+        { cid: "J18.9", desc: "Pneumonia", freq: 35 },
+        { cid: "M81.0", desc: "Osteoporose pós-menopausa", freq: 30 },
+        { cid: "E11",   desc: "Diabetes mellitus tipo 2", freq: 25 },
+        { cid: "R51",   desc: "Cefaleia", freq: 22 },
+        { cid: "G40.9", desc: "Epilepsia", freq: 20 }
+      ],
+      "Últimos 30 dias": [
+        { cid: "S06.0", desc: "Concussão", freq: 180 },
+        { cid: "I10",   desc: "Hipertensão essencial", freq: 150 },
+        { cid: "Lupus", desc: "Lúpus Eritematoso Sistêmico", freq: 135 },
+        { cid: "I21.9", desc: "Infarto agudo do miocárdio", freq: 120 },
+        { cid: "J18.9", desc: "Pneumonia", freq: 110 },
+        { cid: "M81.0", desc: "Osteoporose pós-menopausa", freq: 96 },
+        { cid: "E11",   desc: "Diabetes mellitus tipo 2", freq: 80 },
+        { cid: "R51",   desc: "Cefaleia", freq: 70 },
+        { cid: "G40.9", desc: "Epilepsia", freq: 61 }
+      ],
+      "Últimos 90 dias": [
+        { cid: "S06.0", desc: "Concussão", freq: 520 },
+        { cid: "I10",   desc: "Hipertensão essencial", freq: 480 },
+        { cid: "Lupus", desc: "Lúpus Eritematoso Sistêmico", freq: 440 },
+        { cid: "I21.9", desc: "Infarto agudo do miocárdio", freq: 420 },
+        { cid: "J18.9", desc: "Pneumonia", freq: 395 },
+        { cid: "M81.0", desc: "Osteoporose pós-menopausa", freq: 360 },
+        { cid: "E11",   desc: "Diabetes mellitus tipo 2", freq: 330 },
+        { cid: "R51",   desc: "Cefaleia", freq: 300 },
+        { cid: "G40.9", desc: "Epilepsia", freq: 280 }
+      ]
+    };
 
-    // Fake reports elements
-    const fakeAvgTime = document.getElementById('fake-avg-time');
-    const fakePrecision = document.getElementById('fake-precision');
-    const fakeTopCids = document.getElementById('fake-top-cids');
-    const fakeTable = document.getElementById('fake-table');
-    const btnExport = document.getElementById('btn-export');
-
+    // -------------------- ESTADO --------------------
     let cidDescriptions = {};
 
-    // -------------------- CARREGAR DESCRIÇÕES CID --------------------
-    async function loadCidDescriptions() {
-      try {
-        const response = await fetch('./cids.json');
-        if (!response.ok) throw new Error('Não foi possível carregar cids.json');
-        cidDescriptions = await response.json();
-        console.log('Descrições de CID carregadas!');
-      } catch (error) {
-        console.error(error);
-        errorMessage.textContent = "Erro ao carregar dados essenciais (cids.json).";
-        errorMessage.classList.remove('hidden');
-      }
-    }
+    // -------------------- BOOT --------------------
     document.addEventListener('DOMContentLoaded', () => {
       loadCidDescriptions();
-      seedAdminKPIs();        // popula KPIs da aba "Visão Geral"
-      seedFakeReports();      // popula conteúdo da aba fictícia
-    });
 
-    // -------------------- TEXTO DEMO E SINCRONIZAÇÃO --------------------
-    const defaultClinicalNote = "Lactente com 9 meses, previamente hígido, iniciou quadro de coriza e tosse seca há 4 dias. Evoluiu com piora do padrão respiratório, taquipneia, gemência e tiragem subcostal. Mãe relata febre de 38.5°C e baixa aceitação alimentar. Ao exame: FR de 62 irpm, sibilos expiratórios difusos e saturação de O2 de 89% em ar ambiente. Hipótese de bronquiolite viral aguda, provável VSR. Internado para oxigenoterapia e hidratação venosa.";
-    clinicalNoteInput.value = defaultClinicalNote;
-    highlightedTextDiv.textContent = defaultClinicalNote;
+      // Demo text
+      const defaultClinicalNote = "Lactente com 9 meses, previamente hígido, iniciou quadro de coriza e tosse seca há 4 dias. Evoluiu com piora do padrão respiratório, taquipneia, gemência e tiragem subcostal. Mãe relata febre de 38.5°C e baixa aceitação alimentar. Ao exame: FR de 62 irpm, sibilos expiratórios difusos e saturação de O2 de 89% em ar ambiente. Hipótese de bronquiolite viral aguda, provável VSR. Internado para oxigenoterapia e hidratação venosa.";
+      clinicalNoteInput.value = defaultClinicalNote;
+      highlightedTextDiv.textContent = defaultClinicalNote;
 
-    clinicalNoteInput.addEventListener('input', () => renderHighlightedText(clinicalNoteInput.value, []));
-    clinicalNoteInput.addEventListener('scroll', () => highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop);
+      // Medicos no filtro
+      seedMedicos();
 
-    // -------------------- LÓGICA DE UPLOAD --------------------
-    fileUploadInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        fileNameDisplay.textContent = `Arquivo: ${file.name}`;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          clinicalNoteInput.value = e.target.result;
-          highlightedTextDiv.textContent = e.target.result;
-        };
-        reader.readAsText(file);
+      // listeners básicos
+      clinicalNoteInput.addEventListener('input', () => renderHighlightedText(clinicalNoteInput.value, []));
+      clinicalNoteInput.addEventListener('scroll', () => highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop);
+
+      if (adminWelcomeName && loggedInUser) {
+        adminWelcomeName.textContent = loggedInUser.textContent || 'Admin';
       }
     });
 
-    // -------------------- AUTENTICAÇÃO E ABAS --------------------
+    // -------------------- LOGIN / TABS --------------------
     loginButton.addEventListener('click', () => {
       const username = usernameInput.value.trim();
       if (username) {
@@ -273,114 +326,50 @@
       loginScreen.classList.remove('hidden');
     });
 
-    Object.entries(tabs).forEach(([tabName, tabBtn]) => {
-      tabBtn.addEventListener('click', () => switchTab(tabName));
+    Object.entries(tabs).forEach(([tabName, btn]) => {
+      btn.addEventListener('click', () => switchTab(tabName));
     });
 
     function switchTab(tabName) {
-      Object.values(tabs).forEach(btn => {
-        btn.classList.remove('border-blue-600', 'text-blue-700');
-        btn.classList.add('border-transparent', 'text-gray-700');
-      });
-      tabs[tabName].classList.remove('border-transparent', 'text-gray-700');
-      tabs[tabName].classList.add('border-blue-600', 'text-blue-700');
+      Object.values(tabs).forEach(b => b.classList.remove('active'));
+      tabs[tabName].classList.add('active');
 
-      analysisArea.classList.toggle('hidden', tabName === 'admin');
-      adminDashboardArea.classList.toggle('hidden', tabName !== 'admin');
-
+      // mostrar/ocultar áreas
+      analysisArea.classList.toggle('hidden', tabName !== 'text' && tabName !== 'upload');
+      document.getElementById('admin-dashboard-area').classList.toggle('hidden', tabName !== 'admin');
       textInputArea.classList.toggle('hidden', tabName !== 'text');
       uploadArea.classList.toggle('hidden', tabName !== 'upload');
 
-      if (tabName === 'admin') {
-        // Sempre abre "Visão Geral" primeiro
-        setAdminSubTab('overview');
-      } else {
+      // reset resultado ao sair
+      if (tabName !== 'text') {
         resetUI();
-        renderHighlightedText(clinicalNoteInput.value, []);
+      }
+
+      if (tabName === 'admin') {
+        if (adminWelcomeName && loggedInUser) {
+          adminWelcomeName.textContent = loggedInUser.textContent || 'Admin';
+        }
+        renderDashboard(); // render sempre que entrar
       }
     }
 
-    // -------------------- SUB-ABAS DO DASHBOARD --------------------
-    adminTabOverview.addEventListener('click', () => setAdminSubTab('overview'));
-    adminTabFake.addEventListener('click', () => setAdminSubTab('fake'));
-
-    function setAdminSubTab(which) {
-      // estilo das abas
-      [adminTabOverview, adminTabFake].forEach(b => {
-        b.classList.remove('border-blue-600', 'text-blue-700');
-        b.classList.add('border-transparent', 'text-gray-600');
+    // -------------------- UPLOAD .txt --------------------
+    if (fileUploadInput) {
+      fileUploadInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          fileNameDisplay.textContent = `Arquivo: ${file.name}`;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            clinicalNoteInput.value = e.target.result;
+            highlightedTextDiv.textContent = e.target.result;
+          };
+          reader.readAsText(file);
+        }
       });
-
-      if (which === 'overview') {
-        adminTabOverview.classList.remove('border-transparent', 'text-gray-600');
-        adminTabOverview.classList.add('border-blue-600', 'text-blue-700');
-        adminOverview.classList.remove('hidden');
-        adminFake.classList.add('hidden');
-      } else {
-        adminTabFake.classList.remove('border-transparent', 'text-gray-600');
-        adminTabFake.classList.add('border-blue-600', 'text-blue-700');
-        adminFake.classList.remove('hidden');
-        adminOverview.classList.add('hidden');
-      }
     }
 
-    // -------------------- CONTEÚDO FICTÍCIO: KPIs E TABELA --------------------
-    function seedAdminKPIs() {
-      // números meramente ilustrativos
-      const notes = Math.floor(200 + Math.random() * 150);
-      const validation = (80 + Math.random() * 15).toFixed(1) + '%';
-      const unique = Math.floor(65 + Math.random() * 25);
-
-      kpiNotes.textContent = notes;
-      kpiValidation.textContent = validation;
-      kpiUnique.textContent = unique;
-    }
-
-    function seedFakeReports() {
-      // Cards
-      fakeAvgTime.textContent = (3 + Math.random() * 2).toFixed(1) + ' min';
-      fakePrecision.textContent = (0.35 + Math.random() * 0.2).toFixed(2);
-      fakeTopCids.textContent = 'J21.0 · B34.9 · J20.9';
-
-      // Tabela
-      const rows = [
-        { data: '2025-09-01', user: 'admin', notas: 42, cids: 'J21.0; B34.9', val: 37 },
-        { data: '2025-09-02', user: 'maria', notas: 35, cids: 'J20.9; J45.9', val: 30 },
-        { data: '2025-09-03', user: 'joao', notas: 51, cids: 'A09; J00', val: 45 },
-        { data: '2025-09-04', user: 'admin', notas: 28, cids: 'B34.9; J21.0', val: 24 },
-        { data: '2025-09-05', user: 'maria', notas: 39, cids: 'J21.0; A49.9', val: 33 }
-      ];
-      fakeTable.innerHTML = rows.map(r => `
-        <tr class="hover:bg-slate-50">
-          <td class="px-4 py-3 text-sm text-slate-700">${r.data}</td>
-          <td class="px-4 py-3 text-sm text-slate-700">${r.user}</td>
-          <td class="px-4 py-3 text-sm text-slate-700">${r.notas}</td>
-          <td class="px-4 py-3 text-sm text-slate-700">${escapeHtml(r.cids)}</td>
-          <td class="px-4 py-3 text-sm text-slate-700">${r.val}</td>
-        </tr>
-      `).join('');
-
-      // Exportar CSV (fictício)
-      btnExport.addEventListener('click', () => {
-        const header = ['Data','Usuário','Notas','CIDs Sugeridos','Validações'];
-        const body = Array.from(fakeTable.querySelectorAll('tr')).map(tr =>
-          Array.from(tr.querySelectorAll('td')).map(td => td.textContent.replace(/\s+/g, ' ').trim())
-        );
-        const csv = [header, ...body].map(row =>
-          row.map(cell => /[",;\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell).join(';')
-        ).join('\n');
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'relatorios_ficticios.csv';
-        a.click();
-        URL.revokeObjectURL(url);
-      }, { once: true }); // registra uma vez por seed
-    }
-
-    // -------------------- CHAMADA À API --------------------
+    // -------------------- PREDIÇÃO / API --------------------
     analyzeButton.addEventListener('click', async () => {
       resetUI();
       const noteText = clinicalNoteInput.value;
@@ -399,13 +388,15 @@
           body: JSON.stringify({ clinicalNote: noteText }),
         });
         if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.details || err.error || `Erro HTTP ${response.status}`);
+          // tenta interpretar payload de erro json; se não, mostra status
+          let msg = `Erro HTTP ${response.status}`;
+          try { const err = await response.json(); msg = err.details || err.error || msg; } catch {}
+          throw new Error(msg);
         }
         const data = await response.json();
-        const predictions = data.cids.map(item => ({
+        const predictions = (data.cids || []).map(item => ({
           cid: item.cid,
-          label: cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada`,
+          label: cidDescriptions[(item.cid || '').toUpperCase()] || `Descrição não encontrada`,
           evidence: findEvidence(noteText, item.evidencia || []),
         }));
         displayResults(predictions);
@@ -419,12 +410,12 @@
       }
     });
 
-    // -------------------- LÓGICA DE EVIDÊNCIA E DESTAQUE --------------------
+    // -------------------- EVIDÊNCIAS / HIGHLIGHT --------------------
     function findEvidence(originalText, terms) {
-      const lowerText = originalText.toLowerCase();
+      const lowerText = (originalText || '').toLowerCase();
       const ev = new Set();
-      terms.forEach(term => {
-        const lowerTerm = term.toLowerCase();
+      (terms || []).forEach(term => {
+        const lowerTerm = String(term || '').toLowerCase();
         if (lowerTerm.trim() === '') return;
         let i = -1;
         while ((i = lowerText.indexOf(lowerTerm, i + 1)) !== -1) {
@@ -439,11 +430,10 @@
 
     function renderHighlightedText(originalText, evidenceList) {
       if (!evidenceList || evidenceList.length === 0) {
-        highlightedTextDiv.innerHTML = escapeHtml(originalText);
+        highlightedTextDiv.innerHTML = escapeHtml(originalText || '');
         return;
       }
-      let html = '';
-      let cursor = 0;
+      let html = '', cursor = 0;
       evidenceList.forEach(ev => {
         html += escapeHtml(originalText.slice(cursor, ev.start));
         html += `<span class="highlight">${escapeHtml(ev.text)}</span>`;
@@ -453,61 +443,150 @@
       highlightedTextDiv.innerHTML = html;
     }
 
-    // -------------------- EXIBIR RESULTADOS (COM VALIDAÇÃO) --------------------
     function displayResults(predictions) {
       cidList.innerHTML = '';
-      predictions.forEach((pred) => {
+      (predictions || []).forEach((pred) => {
         const li = document.createElement('li');
         li.className = "cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors duration-200";
-        li.dataset.evidence = JSON.stringify(pred.evidence);
+        li.dataset.evidence = JSON.stringify(pred.evidence || []);
         li.innerHTML = `
           <div class="flex items-center justify-between">
             <div class="flex-grow">
-              <p class="font-semibold text-gray-900">${pred.cid} — ${escapeHtml(pred.label)}</p>
+              <p class="font-semibold text-gray-900">${escapeHtml(pred.cid)} — ${escapeHtml(pred.label)}</p>
               <div class="text-xs text-gray-500 mt-2">
                 <span class="font-medium">Evidências:</span>
-                ${pred.evidence.map(e => `<span class="italic">"${escapeHtml(e.text)}"</span>`).join(' • ')}
+                ${(pred.evidence || []).map(e => `<span class="italic">"${escapeHtml(e.text)}"</span>`).join(' • ')}
               </div>
             </div>
             <div class="flex-shrink-0 ml-4 flex items-center space-x-2">
-              <button class="validation-btn p-2 rounded-full" data-action="correct" data-cid="${pred.cid}" title="Correto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></button>
-              <button class="validation-btn p-2 rounded-full" data-action="incorrect" data-cid="${pred.cid}" title="Incorreto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg></button>
+              <button class="validation-btn p-2 rounded-full" data-action="correct" data-cid="${escapeHtml(pred.cid)}" title="Correto">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              </button>
+              <button class="validation-btn p-2 rounded-full" data-action="incorrect" data-cid="${escapeHtml(pred.cid)}" title="Incorreto">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+              </button>
             </div>
           </div>`;
         cidList.appendChild(li);
       });
 
+      // hover highlight
       cidList.querySelectorAll('.cid-item').forEach(item => {
         item.addEventListener('mouseenter', () => {
-          const evidence = JSON.parse(item.dataset.evidence);
+          const evidence = JSON.parse(item.dataset.evidence || "[]");
           renderHighlightedText(clinicalNoteInput.value, evidence);
         });
         item.addEventListener('mouseleave', () => renderHighlightedText(clinicalNoteInput.value, []));
       });
 
+      // validação
       cidList.querySelectorAll('.validation-btn').forEach(button => {
         button.addEventListener('click', (e) => {
           e.stopPropagation();
           const currentButton = e.currentTarget;
-          const { action, cid } = currentButton.dataset;
+          const { action } = currentButton.dataset;
           const parent = currentButton.parentElement;
           const correctBtn = parent.querySelector('[data-action="correct"]');
           const incorrectBtn = parent.querySelector('[data-action="incorrect"]');
-
           correctBtn.classList.remove('correct'); incorrectBtn.classList.remove('incorrect');
           correctBtn.disabled = false; incorrectBtn.disabled = false;
-
-          if (action === 'correct') {
-            correctBtn.classList.add('correct'); incorrectBtn.disabled = true;
-          } else {
-            incorrectBtn.classList.add('incorrect'); correctBtn.disabled = true;
-          }
-          console.log(`Feedback: CID ${cid} foi marcado como ${action}.`);
+          if (action === 'correct') { correctBtn.classList.add('correct'); incorrectBtn.disabled = true; }
+          else { incorrectBtn.classList.add('incorrect'); correctBtn.disabled = true; }
         });
       });
     }
 
-    // -------------------- UTILITÁRIOS UI --------------------
+    // -------------------- DASHBOARD FUNÇÕES --------------------
+    function seedMedicos() {
+      if (!filterMedico) return;
+      // evita duplicar se o usuário voltar à aba
+      if (filterMedico.options.length <= 1) {
+        DASH_MEDICOS.forEach(m => {
+          if (m === "Todos os Médicos") return; // já existe
+          const opt = document.createElement('option');
+          opt.textContent = m;
+          filterMedico.appendChild(opt);
+        });
+      }
+    }
+
+    function renderDashboard() {
+      const periodo = filterPeriodo ? filterPeriodo.value : 'Últimos 30 dias';
+      const medico = filterMedico ? filterMedico.value : 'Todos os Médicos';
+      const data = (DASH_DATASETS[periodo] || []).map(d => ({...d}));
+
+      // variação por médico
+      const factor = medico === "Todos os Médicos" ? 1.0 : 0.9 + Math.random()*0.2;
+      data.forEach(d => d.adj = Math.max(1, Math.round(d.freq * factor)));
+
+      const total = data.reduce((s,d)=>s+d.adj,0);
+      const unicos = data.length;
+      const acc = (92 + Math.random()*6).toFixed(1) + "%";
+
+      kpiTotal.textContent = total;
+      kpiUnicos.textContent = unicos;
+      kpiAcc.textContent = acc;
+
+      // ordenar por frequência desc
+      data.sort((a,b)=>b.adj-a.adj);
+
+      cidFreqBody.innerHTML = data.map(d => {
+        const pct = total ? (d.adj/total*100) : 0;
+        return `
+          <tr class="border-b border-slate-100">
+            <td class="py-3 pr-3 font-medium text-slate-800">${d.cid}</td>
+            <td class="py-3 pr-3 text-slate-700">${escapeHtml(d.desc)}</td>
+            <td class="py-3 pr-3 w-48">
+              <div class="text-slate-600 mb-1">${d.adj}</div>
+              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-2 bg-blue-600" style="width:${pct.toFixed(1)}%"></div>
+              </div>
+            </td>
+            <td class="py-3 pl-3 text-right font-semibold text-slate-800">${pct.toFixed(1)}%</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    if (filterMedico) filterMedico.addEventListener('change', renderDashboard);
+    if (filterPeriodo) filterPeriodo.addEventListener('change', renderDashboard);
+
+    if (btnExportDashboard) {
+      btnExportDashboard.addEventListener('click', () => {
+        const periodo = filterPeriodo.value;
+        const medico = filterMedico.value;
+        const rows = [["Período", periodo],["Médico", medico],[],["CID","Descrição","Frequência","% do total"]];
+        // reconstrói do DOM
+        Array.from(cidFreqBody.querySelectorAll('tr')).forEach(tr => {
+          const tds = tr.querySelectorAll('td');
+          const cid  = tds[0].textContent.trim();
+          const desc = tds[1].textContent.trim();
+          const freq = tds[2].querySelector('div').textContent.trim();
+          const pct  = tds[3].textContent.trim();
+          rows.push([cid, desc, freq, pct]);
+        });
+        const csv = rows.map(r => r.map(c => /[",;\n]/.test(c) ? `"${c.replace(/"/g,'""')}"` : c).join(';')).join('\n');
+        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'dashboard_codificacao.csv'; a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // -------------------- UTILS --------------------
+    async function loadCidDescriptions() {
+      try {
+        const response = await fetch('./cids.json');
+        if (!response.ok) throw new Error('Não foi possível carregar cids.json');
+        cidDescriptions = await response.json();
+      } catch (error) {
+        console.error(error);
+        errorMessage.textContent = "Erro ao carregar dados essenciais (cids.json).";
+        errorMessage.classList.remove('hidden');
+      }
+    }
+
     function resetUI() {
       errorMessage.classList.add('hidden');
       resultsSection.classList.add('hidden');
@@ -516,8 +595,9 @@
     }
 
     function escapeHtml(str) {
-      return String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m]);
+      return String(str ?? '').replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m]);
     }
   </script>
 </body>
 </html>
+
