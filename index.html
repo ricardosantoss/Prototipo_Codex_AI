@@ -9,8 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-
-
 </head>
 <body class="flex items-center justify-center min-h-screen py-10">
 
@@ -83,9 +81,78 @@
           </div>
         </div>
 
+        <!-- DASHBOARD ADMIN -->
         <div id="admin-dashboard-area" class="hidden mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800">Dashboard do Administrador</h2>
-            <p class="text-gray-500 mt-1">Área em desenvolvimento.</p>
+          <h2 class="text-2xl font-semibold text-gray-800">Dashboard do Administrador</h2>
+          <p class="text-gray-500 mt-1">Acompanhe métricas gerais e relatórios (dados fictícios).</p>
+
+          <!-- Sub-abas do admin -->
+          <div class="mt-4 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-6" aria-label="Admin Tabs">
+              <button id="admin-tab-overview" class="admin-tab-button whitespace-nowrap pb-3 px-1 border-b-2 font-semibold text-sm border-blue-600 text-blue-700">Visão Geral</button>
+              <button id="admin-tab-fake" class="admin-tab-button whitespace-nowrap pb-3 px-1 border-b-2 font-semibold text-sm border-transparent text-gray-600 hover:text-gray-800">Relatórios (Fictício)</button>
+            </nav>
+          </div>
+
+          <!-- Conteúdo: Visão Geral -->
+          <div id="admin-overview" class="mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50">
+                <p class="text-sm text-slate-600">Notas analisadas (últimos 7 dias)</p>
+                <p id="kpi-notes" class="mt-2 text-3xl font-bold text-slate-900">—</p>
+              </div>
+              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50">
+                <p class="text-sm text-slate-600">Taxa de validação clínica</p>
+                <p id="kpi-validation" class="mt-2 text-3xl font-bold text-slate-900">—</p>
+              </div>
+              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50">
+                <p class="text-sm text-slate-600">CIDs diferentes sugeridos</p>
+                <p id="kpi-unique" class="mt-2 text-3xl font-bold text-slate-900">—</p>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 mt-3">*Valores demonstrativos.</p>
+          </div>
+
+          <!-- Conteúdo: Relatórios Fictícios -->
+          <div id="admin-fake" class="hidden mt-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xl font-semibold text-gray-800">Relatórios (Dados Fictícios)</h3>
+              <button id="btn-export" class="bg-indigo-600 text-white text-sm font-semibold py-2 px-3 rounded-lg hover:bg-indigo-700">Exportar CSV</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div class="p-4 rounded-xl border border-slate-200">
+                <p class="text-sm text-slate-600">Tempo médio por nota</p>
+                <p id="fake-avg-time" class="mt-1 text-2xl font-bold text-slate-900">—</p>
+              </div>
+              <div class="p-4 rounded-xl border border-slate-200">
+                <p class="text-sm text-slate-600">Precisão (amostra)</p>
+                <p id="fake-precision" class="mt-1 text-2xl font-bold text-slate-900">—</p>
+              </div>
+              <div class="p-4 rounded-xl border border-slate-200">
+                <p class="text-sm text-slate-600">Top CIDs sugeridos</p>
+                <p id="fake-top-cids" class="mt-1 text-2xl font-bold text-slate-900">—</p>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Data</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Usuário</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Notas</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">CIDs Sugeridos</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Validações</th>
+                  </tr>
+                </thead>
+                <tbody id="fake-table" class="bg-white divide-y divide-slate-100">
+                  <!-- linhas geradas via JS -->
+                </tbody>
+              </table>
+            </div>
+            <p class="text-xs text-slate-400 mt-3">*Puramente ilustrativo.</p>
+          </div>
         </div>
 
         <div id="results" class="hidden mt-8">
@@ -125,24 +192,47 @@
     const errorMessage = document.getElementById('error-message');
     const fileUploadInput = document.getElementById('file-upload');
     const fileNameDisplay = document.getElementById('fileName');
-    const uploadArea = document.getElementById('upload-area'); // Variável restaurada
-    const adminDashboardArea = document.getElementById('admin-dashboard-area'); // Variável restaurada
+    const uploadArea = document.getElementById('upload-area');
+    const adminDashboardArea = document.getElementById('admin-dashboard-area');
+
+    // Admin sub-tabs
+    const adminTabOverview = document.getElementById('admin-tab-overview');
+    const adminTabFake = document.getElementById('admin-tab-fake');
+    const adminOverview = document.getElementById('admin-overview');
+    const adminFake = document.getElementById('admin-fake');
+
+    // KPIs fictícios
+    const kpiNotes = document.getElementById('kpi-notes');
+    const kpiValidation = document.getElementById('kpi-validation');
+    const kpiUnique = document.getElementById('kpi-unique');
+
+    // Fake reports elements
+    const fakeAvgTime = document.getElementById('fake-avg-time');
+    const fakePrecision = document.getElementById('fake-precision');
+    const fakeTopCids = document.getElementById('fake-top-cids');
+    const fakeTable = document.getElementById('fake-table');
+    const btnExport = document.getElementById('btn-export');
+
     let cidDescriptions = {};
 
     // -------------------- CARREGAR DESCRIÇÕES CID --------------------
     async function loadCidDescriptions() {
-        try {
-            const response = await fetch('./cids.json');
-            if (!response.ok) throw new Error('Não foi possível carregar cids.json');
-            cidDescriptions = await response.json();
-            console.log('Descrições de CID carregadas!');
-        } catch (error) {
-            console.error(error);
-            errorMessage.textContent = "Erro ao carregar dados essenciais (cids.json).";
-            errorMessage.classList.remove('hidden');
-        }
+      try {
+        const response = await fetch('./cids.json');
+        if (!response.ok) throw new Error('Não foi possível carregar cids.json');
+        cidDescriptions = await response.json();
+        console.log('Descrições de CID carregadas!');
+      } catch (error) {
+        console.error(error);
+        errorMessage.textContent = "Erro ao carregar dados essenciais (cids.json).";
+        errorMessage.classList.remove('hidden');
+      }
     }
-    document.addEventListener('DOMContentLoaded', loadCidDescriptions);
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCidDescriptions();
+      seedAdminKPIs();        // popula KPIs da aba "Visão Geral"
+      seedFakeReports();      // popula conteúdo da aba fictícia
+    });
 
     // -------------------- TEXTO DEMO E SINCRONIZAÇÃO --------------------
     const defaultClinicalNote = "Lactente com 9 meses, previamente hígido, iniciou quadro de coriza e tosse seca há 4 dias. Evoluiu com piora do padrão respiratório, taquipneia, gemência e tiragem subcostal. Mãe relata febre de 38.5°C e baixa aceitação alimentar. Ao exame: FR de 62 irpm, sibilos expiratórios difusos e saturação de O2 de 89% em ar ambiente. Hipótese de bronquiolite viral aguda, provável VSR. Internado para oxigenoterapia e hidratação venosa.";
@@ -154,19 +244,19 @@
 
     // -------------------- LÓGICA DE UPLOAD --------------------
     fileUploadInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            fileNameDisplay.textContent = `Arquivo: ${file.name}`;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                clinicalNoteInput.value = e.target.result;
-                highlightedTextDiv.textContent = e.target.result;
-            };
-            reader.readAsText(file);
-        }
+      const file = event.target.files[0];
+      if (file) {
+        fileNameDisplay.textContent = `Arquivo: ${file.name}`;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          clinicalNoteInput.value = e.target.result;
+          highlightedTextDiv.textContent = e.target.result;
+        };
+        reader.readAsText(file);
+      }
     });
 
-    // -------------------- AUTENTICAÇÃO E ABAS (LÓGICA CORRIGIDA) --------------------
+    // -------------------- AUTENTICAÇÃO E ABAS --------------------
     loginButton.addEventListener('click', () => {
       const username = usernameInput.value.trim();
       if (username) {
@@ -188,17 +278,106 @@
     });
 
     function switchTab(tabName) {
-        Object.values(tabs).forEach(btn => btn.classList.remove('active'));
-        tabs[tabName].classList.add('active');
+      Object.values(tabs).forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-700');
+        btn.classList.add('border-transparent', 'text-gray-700');
+      });
+      tabs[tabName].classList.remove('border-transparent', 'text-gray-700');
+      tabs[tabName].classList.add('border-blue-600', 'text-blue-700');
 
-        analysisArea.classList.toggle('hidden', tabName === 'admin');
-        adminDashboardArea.classList.toggle('hidden', tabName !== 'admin');
-        
-        textInputArea.classList.toggle('hidden', tabName !== 'text');
-        uploadArea.classList.toggle('hidden', tabName !== 'upload');
+      analysisArea.classList.toggle('hidden', tabName === 'admin');
+      adminDashboardArea.classList.toggle('hidden', tabName !== 'admin');
 
+      textInputArea.classList.toggle('hidden', tabName !== 'text');
+      uploadArea.classList.toggle('hidden', tabName !== 'upload');
+
+      if (tabName === 'admin') {
+        // Sempre abre "Visão Geral" primeiro
+        setAdminSubTab('overview');
+      } else {
         resetUI();
         renderHighlightedText(clinicalNoteInput.value, []);
+      }
+    }
+
+    // -------------------- SUB-ABAS DO DASHBOARD --------------------
+    adminTabOverview.addEventListener('click', () => setAdminSubTab('overview'));
+    adminTabFake.addEventListener('click', () => setAdminSubTab('fake'));
+
+    function setAdminSubTab(which) {
+      // estilo das abas
+      [adminTabOverview, adminTabFake].forEach(b => {
+        b.classList.remove('border-blue-600', 'text-blue-700');
+        b.classList.add('border-transparent', 'text-gray-600');
+      });
+
+      if (which === 'overview') {
+        adminTabOverview.classList.remove('border-transparent', 'text-gray-600');
+        adminTabOverview.classList.add('border-blue-600', 'text-blue-700');
+        adminOverview.classList.remove('hidden');
+        adminFake.classList.add('hidden');
+      } else {
+        adminTabFake.classList.remove('border-transparent', 'text-gray-600');
+        adminTabFake.classList.add('border-blue-600', 'text-blue-700');
+        adminFake.classList.remove('hidden');
+        adminOverview.classList.add('hidden');
+      }
+    }
+
+    // -------------------- CONTEÚDO FICTÍCIO: KPIs E TABELA --------------------
+    function seedAdminKPIs() {
+      // números meramente ilustrativos
+      const notes = Math.floor(200 + Math.random() * 150);
+      const validation = (80 + Math.random() * 15).toFixed(1) + '%';
+      const unique = Math.floor(65 + Math.random() * 25);
+
+      kpiNotes.textContent = notes;
+      kpiValidation.textContent = validation;
+      kpiUnique.textContent = unique;
+    }
+
+    function seedFakeReports() {
+      // Cards
+      fakeAvgTime.textContent = (3 + Math.random() * 2).toFixed(1) + ' min';
+      fakePrecision.textContent = (0.35 + Math.random() * 0.2).toFixed(2);
+      fakeTopCids.textContent = 'J21.0 · B34.9 · J20.9';
+
+      // Tabela
+      const rows = [
+        { data: '2025-09-01', user: 'admin', notas: 42, cids: 'J21.0; B34.9', val: 37 },
+        { data: '2025-09-02', user: 'maria', notas: 35, cids: 'J20.9; J45.9', val: 30 },
+        { data: '2025-09-03', user: 'joao', notas: 51, cids: 'A09; J00', val: 45 },
+        { data: '2025-09-04', user: 'admin', notas: 28, cids: 'B34.9; J21.0', val: 24 },
+        { data: '2025-09-05', user: 'maria', notas: 39, cids: 'J21.0; A49.9', val: 33 }
+      ];
+      fakeTable.innerHTML = rows.map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="px-4 py-3 text-sm text-slate-700">${r.data}</td>
+          <td class="px-4 py-3 text-sm text-slate-700">${r.user}</td>
+          <td class="px-4 py-3 text-sm text-slate-700">${r.notas}</td>
+          <td class="px-4 py-3 text-sm text-slate-700">${escapeHtml(r.cids)}</td>
+          <td class="px-4 py-3 text-sm text-slate-700">${r.val}</td>
+        </tr>
+      `).join('');
+
+      // Exportar CSV (fictício)
+      btnExport.addEventListener('click', () => {
+        const header = ['Data','Usuário','Notas','CIDs Sugeridos','Validações'];
+        const body = Array.from(fakeTable.querySelectorAll('tr')).map(tr =>
+          Array.from(tr.querySelectorAll('td')).map(td => td.textContent.replace(/\s+/g, ' ').trim())
+        );
+        const csv = [header, ...body].map(row =>
+          row.map(cell => /[",;\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell).join(';')
+        ).join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'relatorios_ficticios.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      }, { once: true }); // registra uma vez por seed
     }
 
     // -------------------- CHAMADA À API --------------------
@@ -225,9 +404,9 @@
         }
         const data = await response.json();
         const predictions = data.cids.map(item => ({
-            cid: item.cid,
-            label: cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada`,
-            evidence: findEvidence(noteText, item.evidencia || []),
+          cid: item.cid,
+          label: cidDescriptions[item.cid.toUpperCase()] || `Descrição não encontrada`,
+          evidence: findEvidence(noteText, item.evidencia || []),
         }));
         displayResults(predictions);
       } catch (error) {
@@ -239,23 +418,23 @@
         resultContent.classList.remove('hidden');
       }
     });
-    
+
     // -------------------- LÓGICA DE EVIDÊNCIA E DESTAQUE --------------------
     function findEvidence(originalText, terms) {
-        const lowerText = originalText.toLowerCase();
-        const ev = new Set();
-        terms.forEach(term => {
-            const lowerTerm = term.toLowerCase();
-            if (lowerTerm.trim() === '') return;
-            let i = -1;
-            while ((i = lowerText.indexOf(lowerTerm, i + 1)) !== -1) {
-                ev.add(JSON.stringify({
-                    start: i, end: i + lowerTerm.length,
-                    text: originalText.slice(i, i + lowerTerm.length)
-                }));
-            }
-        });
-        return Array.from(ev).map(e => JSON.parse(e)).sort((a,b) => a.start - b.start);
+      const lowerText = originalText.toLowerCase();
+      const ev = new Set();
+      terms.forEach(term => {
+        const lowerTerm = term.toLowerCase();
+        if (lowerTerm.trim() === '') return;
+        let i = -1;
+        while ((i = lowerText.indexOf(lowerTerm, i + 1)) !== -1) {
+          ev.add(JSON.stringify({
+            start: i, end: i + lowerTerm.length,
+            text: originalText.slice(i, i + lowerTerm.length)
+          }));
+        }
+      });
+      return Array.from(ev).map(e => JSON.parse(e)).sort((a,b) => a.start - b.start);
     }
 
     function renderHighlightedText(originalText, evidenceList) {
@@ -276,56 +455,56 @@
 
     // -------------------- EXIBIR RESULTADOS (COM VALIDAÇÃO) --------------------
     function displayResults(predictions) {
-        cidList.innerHTML = '';
-        predictions.forEach((pred) => {
-            const li = document.createElement('li');
-            li.className = "cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors duration-200";
-            li.dataset.evidence = JSON.stringify(pred.evidence);
-            li.innerHTML = `
-              <div class="flex items-center justify-between">
-                <div class="flex-grow">
-                  <p class="font-semibold text-gray-900">${pred.cid} — ${escapeHtml(pred.label)}</p>
-                  <div class="text-xs text-gray-500 mt-2">
-                    <span class="font-medium">Evidências:</span>
-                    ${pred.evidence.map(e => `<span class="italic">"${escapeHtml(e.text)}"</span>`).join(' • ')}
-                  </div>
-                </div>
-                <div class="flex-shrink-0 ml-4 flex items-center space-x-2">
-                    <button class="validation-btn p-2 rounded-full" data-action="correct" data-cid="${pred.cid}" title="Correto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></button>
-                    <button class="validation-btn p-2 rounded-full" data-action="incorrect" data-cid="${pred.cid}" title="Incorreto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg></button>
-                </div>
-              </div>`;
-            cidList.appendChild(li);
-        });
-        
-        cidList.querySelectorAll('.cid-item').forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                const evidence = JSON.parse(item.dataset.evidence);
-                renderHighlightedText(clinicalNoteInput.value, evidence);
-            });
-            item.addEventListener('mouseleave', () => renderHighlightedText(clinicalNoteInput.value, []));
-        });
+      cidList.innerHTML = '';
+      predictions.forEach((pred) => {
+        const li = document.createElement('li');
+        li.className = "cid-item border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors duration-200";
+        li.dataset.evidence = JSON.stringify(pred.evidence);
+        li.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex-grow">
+              <p class="font-semibold text-gray-900">${pred.cid} — ${escapeHtml(pred.label)}</p>
+              <div class="text-xs text-gray-500 mt-2">
+                <span class="font-medium">Evidências:</span>
+                ${pred.evidence.map(e => `<span class="italic">"${escapeHtml(e.text)}"</span>`).join(' • ')}
+              </div>
+            </div>
+            <div class="flex-shrink-0 ml-4 flex items-center space-x-2">
+              <button class="validation-btn p-2 rounded-full" data-action="correct" data-cid="${pred.cid}" title="Correto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></button>
+              <button class="validation-btn p-2 rounded-full" data-action="incorrect" data-cid="${pred.cid}" title="Incorreto"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg></button>
+            </div>
+          </div>`;
+        cidList.appendChild(li);
+      });
 
-        cidList.querySelectorAll('.validation-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const currentButton = e.currentTarget;
-                const { action, cid } = currentButton.dataset;
-                const parent = currentButton.parentElement;
-                const correctBtn = parent.querySelector('[data-action="correct"]');
-                const incorrectBtn = parent.querySelector('[data-action="incorrect"]');
-
-                correctBtn.classList.remove('correct'); incorrectBtn.classList.remove('incorrect');
-                correctBtn.disabled = false; incorrectBtn.disabled = false;
-
-                if (action === 'correct') {
-                    correctBtn.classList.add('correct'); incorrectBtn.disabled = true;
-                } else {
-                    incorrectBtn.classList.add('incorrect'); correctBtn.disabled = true;
-                }
-                console.log(`Feedback: CID ${cid} foi marcado como ${action}.`);
-            });
+      cidList.querySelectorAll('.cid-item').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+          const evidence = JSON.parse(item.dataset.evidence);
+          renderHighlightedText(clinicalNoteInput.value, evidence);
         });
+        item.addEventListener('mouseleave', () => renderHighlightedText(clinicalNoteInput.value, []));
+      });
+
+      cidList.querySelectorAll('.validation-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const currentButton = e.currentTarget;
+          const { action, cid } = currentButton.dataset;
+          const parent = currentButton.parentElement;
+          const correctBtn = parent.querySelector('[data-action="correct"]');
+          const incorrectBtn = parent.querySelector('[data-action="incorrect"]');
+
+          correctBtn.classList.remove('correct'); incorrectBtn.classList.remove('incorrect');
+          correctBtn.disabled = false; incorrectBtn.disabled = false;
+
+          if (action === 'correct') {
+            correctBtn.classList.add('correct'); incorrectBtn.disabled = true;
+          } else {
+            incorrectBtn.classList.add('incorrect'); correctBtn.disabled = true;
+          }
+          console.log(`Feedback: CID ${cid} foi marcado como ${action}.`);
+        });
+      });
     }
 
     // -------------------- UTILITÁRIOS UI --------------------
