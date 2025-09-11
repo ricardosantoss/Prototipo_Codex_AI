@@ -8,7 +8,6 @@ let pdfScale = 1.5;
 const sampleCidData = [
     { cid: 'S06.0', description: 'Concussão', frequency: 60, percentage: 18.3 },
     { cid: 'I10', description: 'Hipertensão essencial', frequency: 50, percentage: 15.3 },
-    { cid: 'Lupus', description: 'Lúpus Eritematoso Sistêmico', frequency: 45, percentage: 13.8 },
     { cid: 'I21.9', description: 'Infarto agudo do miocárdio', frequency: 40, percentage: 12.2 },
     { cid: 'J18.9', description: 'Pneumonia', frequency: 35, percentage: 10.7 },
     { cid: 'M81.0', description: 'Osteoporose pós-menopaúsica', frequency: 30, percentage: 9.2 },
