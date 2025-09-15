@@ -16,7 +16,6 @@ const analysisArea = document.getElementById('analysis-area');
 const textInputArea = document.getElementById('text-input-area');
 const editor = document.getElementById('editor');
 
-const analyzeButton = document.getElementById('analyzeButton');
 const resultsSection = document.getElementById('results');
 const loadingSpinner = document.getElementById('loading');
 const resultContent = document.getElementById('result-content');
@@ -161,7 +160,9 @@ function setupDefaultText() {
     'Evoluiu com piora do padrão respiratório, taquipneia, gemência e tiragem subcostal. ' +
     'Mãe relata febre de 38.5°C e baixa aceitação alimentar. Ao exame: FR 62 irpm, sibilos ' +
     'expiratórios difusos e SpO₂ 89% em ar ambiente. Hipótese: bronquiolite viral aguda (provável VSR).';
-  setNoteTextRaw(demo);
+  if (editor && !editor.innerText.trim()) {
+    setNoteTextRaw(demo);
+  }
 }
 
 // -------------------- GET/SET DE TEXTO --------------------
@@ -412,3 +413,5 @@ function escapeHtml(str) {
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',''':'&#39;'
   })[m]);
 }
+
+
