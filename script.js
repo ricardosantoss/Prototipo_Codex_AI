@@ -14,9 +14,7 @@ const tabs = {
 
 const analysisArea = document.getElementById('analysis-area');
 const textInputArea = document.getElementById('text-input-area');
-const editor = document.getElementById('editor'); // NOVO (pode não existir)
-const clinicalNoteInput = document.getElementById('clinicalNote'); // LEGADO (pode não existir)
-const highlightedTextDiv = document.getElementById('highlighted-text'); // LEGADO (pode não existir)
+const editor = document.getElementById('editor');
 
 const analyzeButton = document.getElementById('analyzeButton');
 const resultsSection = document.getElementById('results');
@@ -120,16 +118,6 @@ function setupEventListeners() {
   fileUploadInput?.addEventListener('change', handleFileUpload);
   cidList?.addEventListener('click', handleValidation);
 
-  // LEGADO: sincroniza overlay com textarea se existir
-  if (clinicalNoteInput && highlightedTextDiv) {
-    clinicalNoteInput.addEventListener('input', () => {
-      renderHighlightedText(getNoteTextRaw(), []);
-    });
-    clinicalNoteInput.addEventListener('scroll', () => {
-      highlightedTextDiv.scrollTop = clinicalNoteInput.scrollTop;
-    });
-  }
-
   filterMedico?.addEventListener('change', renderDashboard);
   filterPeriodo?.addEventListener('change', renderDashboard);
   btnExportDashboard?.addEventListener('click', exportDashboardCsv);
@@ -176,18 +164,14 @@ function setupDefaultText() {
   setNoteTextRaw(demo);
 }
 
-// -------------------- GET/SET DE TEXTO (HÍBRIDO) --------------------
+// -------------------- GET/SET DE TEXTO --------------------
 function getNoteTextRaw() {
-  // Prioriza editor (novo). Se não existir, usa textarea (legado).
   if (editor) return editor.innerText || '';
-  if (clinicalNoteInput) return clinicalNoteInput.value || '';
   return '';
 }
+
 function setNoteTextRaw(text) {
   if (editor) editor.innerText = text ?? '';
-  if (clinicalNoteInput) clinicalNoteInput.value = text ?? '';
-  // mantém overlay legado coerente
-  if (highlightedTextDiv) highlightedTextDiv.textContent = text ?? '';
 }
 
 // -------------------- UPLOAD --------------------
@@ -264,16 +248,10 @@ function findEvidence(originalText, terms) {
   return Array.from(ev).map(x => JSON.parse(x)).sort((a, b) => a.start - b.start);
 }
 
-/**
- * Renderiza o texto sem/with highlights.
- * - Se existir #editor (novo), aplica lá.
- * - Senão, usa overlay legado (#highlighted-text) e deixa o textarea apenas como fonte.
- */
 function renderHighlightedText(text, evidences = []) {
-  // NOVO (editor)
   if (editor) {
     if (!evidences || evidences.length === 0) {
-      editor.textContent = text || '';
+      editor.innerHTML = escapeHtml(text || '');
       return;
     }
     let html = '';
@@ -285,24 +263,6 @@ function renderHighlightedText(text, evidences = []) {
     }
     html += escapeHtml(String(text).slice(last));
     editor.innerHTML = html;
-    return;
-  }
-
-  // LEGADO (textarea + overlay)
-  if (highlightedTextDiv) {
-    if (!evidences || evidences.length === 0) {
-      highlightedTextDiv.textContent = text || '';
-      return;
-    }
-    let html = '';
-    let last = 0;
-    for (const e of evidences) {
-      html += escapeHtml(String(text).slice(last, e.start));
-      html += `<span class="highlight">${escapeHtml(String(text).slice(e.start, e.end))}</span>`;
-      last = e.end;
-    }
-    html += escapeHtml(String(text).slice(last));
-    highlightedTextDiv.innerHTML = html;
   }
 }
 
@@ -330,7 +290,6 @@ function displayResults(predictions) {
       </div>
     `;
 
-    // Hover -> highlight no alvo correto (editor novo OU overlay legado)
     li.addEventListener('mouseenter', () => {
       renderHighlightedText(getNoteTextRaw(), pred.evidence || []);
     });
@@ -450,6 +409,6 @@ function showError(msg) {
 }
 function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, m => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',''':'&#39;'
   })[m]);
 }
