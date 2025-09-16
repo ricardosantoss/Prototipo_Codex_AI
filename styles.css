@@ -106,12 +106,11 @@ body{
    EDITOR ÚNICO (contenteditable)
    Substitui o antigo #clinicalNote + #highlighted-text
    HTML esperado:
-   <div id="clinicalNoteContainer"><div id="editor" contenteditable></div></div>
+   <div id="text-input-area">
+     <div id="editor" contenteditable></div>
+   </div>
    ===================================================== */
 
-#clinicalNoteContainer{
-  position: relative;
-}
 
 #editor{
   /* Área de edição/visualização */
