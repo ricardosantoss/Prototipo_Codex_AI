@@ -15,6 +15,7 @@ const tabs = {
 const analysisArea = document.getElementById('analysis-area');
 const textInputArea = document.getElementById('text-input-area');
 const editor = document.getElementById('editor');
+const analyzeButton = document.getElementById('analyzeButton');
 
 const resultsSection = document.getElementById('results');
 const loadingSpinner = document.getElementById('loading');
@@ -409,9 +410,14 @@ function showError(msg) {
   errorMessage.classList.remove('hidden');
 }
 function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, m => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',''':'&#39;'
-  })[m]);
+  const htmlMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  };
+  return String(str ?? '').replace(/[&<>"']/g, match => htmlMap[match]);
 }
 
 
