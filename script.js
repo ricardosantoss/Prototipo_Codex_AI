@@ -47,7 +47,6 @@ const DASH_DATASETS = {
   'Últimos 7 dias': [
     { cid: 'S06.0', desc: 'Concussão', freq: 60 },
     { cid: 'I10', desc: 'Hipertensão essencial', freq: 50 },
-    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 45 },
     { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 40 },
     { cid: 'J18.9', desc: 'Pneumonia', freq: 35 },
     { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 30 },
@@ -58,7 +57,6 @@ const DASH_DATASETS = {
   'Últimos 30 dias': [
     { cid: 'S06.0', desc: 'Concussão', freq: 180 },
     { cid: 'I10', desc: 'Hipertensão essencial', freq: 150 },
-    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 135 },
     { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 120 },
     { cid: 'J18.9', desc: 'Pneumonia', freq: 110 },
     { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 96 },
@@ -69,7 +67,6 @@ const DASH_DATASETS = {
   'Últimos 90 dias': [
     { cid: 'S06.0', desc: 'Concussão', freq: 520 },
     { cid: 'I10', desc: 'Hipertensão essencial', freq: 480 },
-    { cid: 'Lupus', desc: 'Lúpus Eritematoso Sistêmico', freq: 440 },
     { cid: 'I21.9', desc: 'Infarto agudo do miocárdio', freq: 420 },
     { cid: 'J18.9', desc: 'Pneumonia', freq: 395 },
     { cid: 'M81.0', desc: 'Osteoporose pós-menopausa', freq: 360 },
