@@ -309,7 +309,9 @@ function handleValidation(e) {
   const btn = e.target.closest('.validation-btn');
   if (!btn) return;
   const validation = btn.dataset.validation;
-  btn.parentElement?.querySelectorAll('.validation-btn').forEach(b => (b.disabled = true));
+  btn.parentElement?.querySelectorAll('.validation-btn').forEach(b =>
+    b.classList.remove('correct', 'incorrect')
+  );
   btn.classList.add(validation === 'correct' ? 'correct' : 'incorrect');
 }
 
