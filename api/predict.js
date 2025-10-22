@@ -38,7 +38,7 @@ Sua resposta deve ser UM JSON VÁLIDO no formato de exemplo:
 Nada além desse JSON — sem comentários ou campos extras.`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Ou "gpt-4o" para máxima qualidade
+      model: "ft:gpt-4o-mini-2024-07-18:personal:fine-tuned-cid:CTEiY1Q6", // Ou "gpt-4o" para máxima qualidade
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: clinicalNote }
