@@ -6,54 +6,54 @@ export default async function handler(req, res) {
     const HF_TOKEN = process.env.HF_TOKEN; 
     const MODEL_ID = "ricardosantoss/CodexAI-Llama-3-8B-CID10";
 
-    // 1. Prompt formatado para o Llama-3 Instruct
-    const prompt = `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nVocê é um médico especialista em CID-10. Responda APENAS com um objeto JSON válido, sem texto explicativo. Formato: {"cids": [{"cid": "codigo", "tipo": "principal", "evidencia": ["trecho"]}]}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nAnalise o laudo: ${clinicalNote}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`;
+    // NOVO ENDPOINT DO HUGGING FACE
+    const API_URL = `https://router.huggingface.co/hf-inference/models/${MODEL_ID}`;
 
-    const response = await fetch(
-      `https://api-inference.huggingface.co/models/${MODEL_ID}`,
-      {
-        headers: { 
-          Authorization: `Bearer ${HF_TOKEN}`, 
-          "Content-Type": "application/json" 
+    const prompt = `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nVocê é um médico especialista em CID-10. Analise a nota clínica e retorne APENAS um JSON no formato: {"cids": [{"cid": "codigo", "tipo": "principal", "evidencia": ["trecho"]}]}. Não escreva explicações.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nNota: ${clinicalNote}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`;
+
+    const response = await fetch(API_URL, {
+      headers: { 
+        Authorization: `Bearer ${HF_TOKEN}`, 
+        "Content-Type": "application/json" 
+      },
+      method: "POST",
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: { 
+          max_new_tokens: 500, 
+          temperature: 0.1,
+          return_full_text: false
         },
-        method: "POST",
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: { 
-            max_new_tokens: 500, 
-            temperature: 0.1,
-            return_full_text: false
-          },
-          options: {
-            wait_for_model: true // ISSO evita o erro de carregamento (faz a requisição esperar até 60s)
-          }
-        }),
-      }
-    );
+        options: {
+          wait_for_model: true // Essencial para evitar o erro de modelo carregando
+        }
+      }),
+    });
 
     const result = await response.json();
 
-    // Log para você ver no console o que o modelo respondeu
-    console.log("Resposta bruta do HF:", result);
-
     if (result.error) {
-      return res.status(500).json({ error: `Hugging Face Error: ${result.error}` });
+        // Se o erro for de carregamento, o wait_for_model: true deve segurar, 
+        // mas tratamos aqui por segurança.
+        return res.status(503).json({ error: "O modelo está sendo carregado na GPU. Tente novamente em 30 segundos." });
     }
 
     let generatedText = result[0].generated_text;
 
-    // 2. Limpeza de Markdown (Caso o modelo coloque ```json ... ```)
+    // Limpeza de blocos de código markdown e extração do JSON
     generatedText = generatedText.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    // 3. Tentar extrair o JSON se houver lixo em volta
     const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("O modelo não gerou um JSON válido.");
+    
+    if (!jsonMatch) {
+      console.error("Texto gerado sem JSON:", generatedText);
+      throw new Error("O modelo não gerou um formato compatível.");
+    }
 
     const finalJson = JSON.parse(jsonMatch[0]);
     res.status(200).json(finalJson);
 
   } catch (error) {
     console.error("Erro na API Predict:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Erro na comunicação com o Codex.AI: " + error.message });
   }
 }
