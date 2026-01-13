@@ -6,17 +6,11 @@ export default async function handler(req, res) {
     const HF_TOKEN = process.env.HF_TOKEN; 
     const DEDICATED_ENDPOINT_URL = "https://jlr58ij8i7f7iyle.us-east-1.aws.endpoints.huggingface.cloud";
 
-    if (!HF_TOKEN) {
-        throw new Error("Variável HF_TOKEN não encontrada no ambiente.");
-    }
-
-    const prompt = `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nVocê é um médico especialista em CID-10. Retorne APENAS um JSON no formato: {"cids": [{"cid": "codigo", "tipo": "principal", "evidencia": ["trecho"]}]}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nNota: ${clinicalNote}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`;
+    // Prompt ainda mais rígido sobre o formato das aspas
+    const prompt = `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nVocê é um médico especialista em CID-10. Analise a nota e retorne APENAS um JSON válido com ASPAS DUPLAS em todas as chaves e valores. Exemplo: {"cids": [{"cid": "A10", "tipo": "principal", "evidencia": ["..."]}]}. Não use aspas simples.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nNota: ${clinicalNote}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`;
 
     const response = await fetch(DEDICATED_ENDPOINT_URL, {
-      headers: { 
-        "Authorization": `Bearer ${HF_TOKEN}`, 
-        "Content-Type": "application/json" 
-      },
+      headers: { "Authorization": `Bearer ${HF_TOKEN}`, "Content-Type": "application/json" },
       method: "POST",
       body: JSON.stringify({
         inputs: prompt,
@@ -25,39 +19,35 @@ export default async function handler(req, res) {
     });
 
     const result = await response.json();
+    let text = Array.isArray(result) ? result[0].generated_text : result.generated_text;
 
-    // --- BLOCO DE DIAGNÓSTICO ---
-    if (result.error) {
-      return res.status(500).json({ error: `Hugging Face diz: ${result.error}` });
-    }
+    if (!text) throw new Error("O modelo retornou uma resposta vazia.");
 
-    // O TGI pode retornar {generated_text: "..."} ou [{generated_text: "..."}]
-    let text = "";
-    if (Array.isArray(result) && result.length > 0) {
-        text = result[0].generated_text;
-    } else if (result.generated_text) {
-        text = result.generated_text;
-    }
-
-    if (!text) {
-        console.log("Resposta inesperada:", result);
-        throw new Error("O modelo não devolveu o campo 'generated_text'.");
-    }
-
-    // Limpeza de Markdown (removendo ```json e ```)
-    const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    // --- FUNÇÃO DE LIMPEZA PESADA ---
+    // 1. Remove blocos de código markdown
+    let cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
     
-    // Extração do JSON via Regex
+    // 2. Tenta encontrar o conteúdo entre chaves
     const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-        throw new Error("O modelo respondeu texto, mas não gerou um JSON válido.");
-    }
+    if (!jsonMatch) throw new Error("Não foi encontrado um bloco JSON na resposta.");
+    
+    let jsonString = jsonMatch[0];
 
-    const finalJson = JSON.parse(jsonMatch[0]);
-    return res.status(200).json(finalJson);
+    // 3. CORREÇÃO AUTOMÁTICA: Troca aspas simples por duplas (comum em modelos menores)
+    // Só faz isso se o JSON.parse falhar na primeira tentativa
+    try {
+        const finalJson = JSON.parse(jsonString);
+        return res.status(200).json(finalJson);
+    } catch (e) {
+        console.warn("JSON padrão falhou, tentando correção de aspas...");
+        // Tenta substituir ' por " (heurística simples)
+        jsonString = jsonString.replace(/'/g, '"');
+        const fixedJson = JSON.parse(jsonString);
+        return res.status(200).json(fixedJson);
+    }
 
   } catch (error) {
-    console.error("ERRO CRÍTICO:", error.message);
-    return res.status(500).json({ error: error.message });
+    console.error("Erro no Parse:", error.message);
+    res.status(500).json({ error: "Erro de Formatação: O modelo gerou um JSON inválido. Tente novamente ou ajuste a nota clínica." });
   }
 }
